@@ -1,0 +1,25 @@
+NORMAL:
+  name: hardcore
+  alias: Hardcore
+  color: DARKRED
+  type: NORMAL
+  environment: NORMAL
+  difficulty: NORMAL
+  spawn-exceptions:
+    - PHANTOM
+NETHER:
+  name: hardcore_nether
+  alias: Hardcore Nether
+  color: DARKRED
+  type: NORMAL
+  environment: NETHER
+  spawn-exceptions:
+  difficulty: NORMAL
+THE_END:
+  name: hardcore_the_end
+  alias: Hardcore End
+  color: DARKRED
+  type: NORMAL
+  environment: THE_END
+  spawn-exceptions:
+  difficulty: NORMAL

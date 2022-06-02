@@ -22,14 +22,15 @@ public final class HardcoreSeason extends JavaPlugin {
     }
 
     HikariDataSource hikari;
-    Connection sqlConnection;
-
-    public Connection sqlConn() {
-        return sqlConnection;
-    }
+    boolean runSetup;
 
     @Override
     public void onEnable() {
+    if(getConfig().getInt("seasonNumber") == 0){
+        //TODO: initial setup, generate worlds, setup inventory group, create tables
+        getLogger().info("No data found, running initialization.");
+    }
+
 
     }
 

@@ -12,7 +12,7 @@
     <name>HardcoreSeason</name>
 
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -111,6 +111,95 @@
             <artifactId>HikariCP</artifactId>
             <version>5.0.1</version>
             <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.onarandombox.multiversecore</groupId>
+            <artifactId>Multiverse-Core</artifactId>
+            <version>4.1.0</version>
+            <type>jar</type>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.bukkit</groupId>
+                    <artifactId>bukkit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.bukkit</groupId>
+                    <artifactId>craftbukkit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>AllPay</artifactId>
+                    <groupId>com.fernferret.allpay</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>Vault</artifactId>
+                    <groupId>net.milkbowl.vault</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>VaultAPI</artifactId>
+                    <groupId>net.milkbowl.vault</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>CommandHandler</artifactId>
+                    <groupId>com.pneumaticraft.commandhandler</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>SerializationConfig</artifactId>
+                    <groupId>me.main__.util</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>Logging</artifactId>
+                    <groupId>com.dumptruckman.minecraft</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>metrics</artifactId>
+                    <groupId>org.mcstats.bukkit</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>buscript</artifactId>
+                    <groupId>com.dumptruckman.minecraft</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>junit</artifactId>
+                    <groupId>junit</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>spigot-api</artifactId>
+                    <groupId>org.spigotmc</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jettison</artifactId>
+                    <groupId>org.codehaus.jettison</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- MultiVerse-Inventories -->
+        <dependency>
+            <groupId>com.onarandombox.multiverseinventories</groupId>
+            <artifactId>Multiverse-Inventories</artifactId>
+            <version>4.2.2</version>
+            <type>jar</type>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.bukkit</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>spigot-api</artifactId>
+                    <groupId>org.spigotmc</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.milkbowl.vault</groupId>
+                    <artifactId>Vault</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jettison</groupId>
+                    <artifactId>jettison</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>
