@@ -1,0 +1,20 @@
+current-season: 0
+teleport-cooldown: 5
+softcore-world: 'world'
+hardcore-world: 'hardcore'
+
+storage-type: SQLITE
+sync-time: 30
+
+database:
+  filename: 'hardcoreseason.db'
+  hostname: ''
+  port: 3306
+  db-name: ''
+  username: ''
+  password: ''
+
+blocked-commands:
+  - sethome
+  - home
+  - island

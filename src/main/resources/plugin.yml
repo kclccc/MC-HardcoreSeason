@@ -1,0 +1,6 @@
+name: HardcoreSeason
+version: '${project.version}'
+main: me.exitium.hardcoreseason.HardcoreSeason
+api-version: 1.18
+
+depend: [Vault, Multiverse-Core, Multiverse-Inventories]
