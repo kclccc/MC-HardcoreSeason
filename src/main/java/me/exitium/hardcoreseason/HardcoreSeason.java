@@ -1,9 +1,13 @@
 package me.exitium.hardcoreseason;
 
-import com.zaxxer.hikari.HikariDataSource;
+import com.onarandombox.MultiverseCore.MultiverseCore;
+import me.exitium.hardcoreseason.database.DatabaseManager;
+import me.exitium.hardcoreseason.worldhandler.HCWorldManager;
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
 import java.sql.Connection;
 
 public final class HardcoreSeason extends JavaPlugin {
@@ -21,17 +25,52 @@ public final class HardcoreSeason extends JavaPlugin {
         instance = this;
     }
 
-    HikariDataSource hikari;
-    boolean runSetup;
-
     @Override
     public void onEnable() {
-    if(getConfig().getInt("seasonNumber") == 0){
-        //TODO: initial setup, generate worlds, setup inventory group, create tables
-        getLogger().info("No data found, running initialization.");
+        multiverseCore = initMultiverse();
+        if (multiverseCore == null) {
+            getLogger().severe("Could not bind to MULTIVERSE-CORE, disabling!");
+            return;
+        }
+
+        File configFile = new File(getDataFolder(), "config.yml");
+        if (!configFile.exists()) {
+            saveDefaultConfig();
+            saveResource("hardcore-worlds.yml", false);
+        }
+
+        int seasonNumber = getConfig().getInt("season-number");
+        if (seasonNumber == 0) {
+            //TODO: initial setup, generate worlds, setup inventory group, create tables
+            getLogger().info("No data found, running initialization.");
+            new HCWorldManager(this).createAll();
+            getConfig().set("season-number", seasonNumber + 1);
+        }
+
+        sqlConnection = new DatabaseManager(this).initHikari();
+        if (sqlConnection == null) {
+            getLogger().warning("SQL Connection is null, data cannot be saved! Please check your config options.");
+        }
     }
 
+    Connection sqlConnection;
 
+    public Connection getSqlConnection() {
+        return sqlConnection;
+    }
+
+    MultiverseCore multiverseCore;
+
+    public MultiverseCore getMultiverseCore() {
+        return multiverseCore;
+    }
+
+    public MultiverseCore initMultiverse() {
+        Plugin mvPlugin = Bukkit.getServer().getPluginManager().getPlugin("Multiverse-Core");
+        if ((mvPlugin instanceof MultiverseCore)) {
+            return (MultiverseCore) mvPlugin;
+        }
+        return null;
     }
 
     @Override
