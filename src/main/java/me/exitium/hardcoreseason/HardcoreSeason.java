@@ -17,6 +17,12 @@ public final class HardcoreSeason extends JavaPlugin {
         return instance;
     }
 
+    private int seasonNumber;
+
+    public int getSeasonNumber() {
+        return seasonNumber;
+    }
+
     @Override
     public void onLoad() {
         if (instance != null || !Bukkit.getServer().getWorlds().isEmpty() || !Bukkit.getOnlinePlayers().isEmpty()) {
@@ -39,12 +45,15 @@ public final class HardcoreSeason extends JavaPlugin {
             saveResource("hardcore-worlds.yml", false);
         }
 
-        int seasonNumber = getConfig().getInt("season-number");
+        seasonNumber = getConfig().getInt("season-number");
+        getLogger().info("season: " + seasonNumber);
+
         if (seasonNumber == 0) {
             //TODO: initial setup, generate worlds, setup inventory group, create tables
             getLogger().info("No data found, running initialization.");
             new HCWorldManager(this).createAll();
             getConfig().set("season-number", seasonNumber + 1);
+            saveConfig();
         }
 
         sqlConnection = new DatabaseManager(this).initHikari();

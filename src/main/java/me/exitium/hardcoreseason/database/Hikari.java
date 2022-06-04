@@ -10,7 +10,7 @@ import java.io.IOException;
 public record Hikari(HardcoreSeason plugin) {
 
     public HikariDataSource setupHikari(String storageType) {
-        if(storageType == null) {
+        if (storageType == null) {
             storageType = "SQLITE";
             plugin.getLogger().warning("Storage type not specified, using SQLITE.");
         }
@@ -45,6 +45,8 @@ public record Hikari(HardcoreSeason plugin) {
                     filename += ".db";
                     plugin.getConfig().set("database.filename", filename);
                 }
+
+                plugin.saveConfig();
 
                 File sqlite = new File(plugin.getDataFolder(), filename);
                 if (!sqlite.exists()) {

@@ -47,7 +47,7 @@ public class DatabaseManager {
                 "CREATE TABLE IF NOT EXISTS hardcore_season (" +
                         "rowid INTEGER NOT NULL AUTO_INCREMENT, " +
                         "uuid BINARY(16) NOT NULL, " +
-                        "season INT NOT NULL, " +
+                        "season_number INT NOT NULL, " +
                         "status INT NOT NULL, " +
                         "time INT, " +
                         "spawn_point TEXT, " +
