@@ -21,6 +21,12 @@ public class DatabaseManager {
         writer = new DatabaseWriter(plugin);
     }
 
+    public DatabaseWriter getWriter(){
+        return writer;
+    }
+    public DatabaseReader getReader(){
+        return reader;
+    }
     HikariDataSource hikari;
 
     public Connection initHikari() {

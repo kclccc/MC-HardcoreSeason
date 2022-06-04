@@ -31,6 +31,8 @@ public final class HardcoreSeason extends JavaPlugin {
         instance = this;
     }
 
+    DatabaseManager db;
+
     @Override
     public void onEnable() {
         multiverseCore = initMultiverse();
@@ -56,10 +58,15 @@ public final class HardcoreSeason extends JavaPlugin {
             saveConfig();
         }
 
-        sqlConnection = new DatabaseManager(this).initHikari();
+        db = new DatabaseManager(this);
+        sqlConnection = db.initHikari();
         if (sqlConnection == null) {
             getLogger().warning("SQL Connection is null, data cannot be saved! Please check your config options.");
         }
+    }
+
+    public DatabaseManager getDb(){
+        return db;
     }
 
     Connection sqlConnection;
