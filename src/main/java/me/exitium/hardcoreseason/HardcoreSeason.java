@@ -2,6 +2,7 @@ package me.exitium.hardcoreseason;
 
 import com.onarandombox.MultiverseCore.MultiverseCore;
 import me.exitium.hardcoreseason.database.DatabaseManager;
+import me.exitium.hardcoreseason.player.HCPlayer;
 import me.exitium.hardcoreseason.worldhandler.HCWorldManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
@@ -9,6 +10,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.sql.Connection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public final class HardcoreSeason extends JavaPlugin {
     private HardcoreSeason instance;
@@ -32,6 +36,9 @@ public final class HardcoreSeason extends JavaPlugin {
     }
 
     DatabaseManager db;
+    HCWorldManager hcWorldManager;
+
+    Map<UUID, HCPlayer> onlinePlayers;
 
     @Override
     public void onEnable() {
@@ -50,10 +57,12 @@ public final class HardcoreSeason extends JavaPlugin {
         seasonNumber = getConfig().getInt("season-number");
         getLogger().info("season: " + seasonNumber);
 
+        hcWorldManager = new HCWorldManager(this);
+
         if (seasonNumber == 0) {
             //TODO: initial setup, generate worlds, setup inventory group, create tables
             getLogger().info("No data found, running initialization.");
-            new HCWorldManager(this).createAll();
+            hcWorldManager.createAll();
             getConfig().set("season-number", seasonNumber + 1);
             saveConfig();
         }
@@ -63,9 +72,23 @@ public final class HardcoreSeason extends JavaPlugin {
         if (sqlConnection == null) {
             getLogger().warning("SQL Connection is null, data cannot be saved! Please check your config options.");
         }
+
+        onlinePlayers = new HashMap<>();
     }
 
-    public DatabaseManager getDb(){
+    public void addOnlinePlayer(HCPlayer player) {
+        onlinePlayers.put(player.getUUID(), player);
+    }
+
+    public void remOnlinePlayer(UUID uuid) {
+        onlinePlayers.remove(uuid);
+    }
+
+    public HCWorldManager getHcWorldManager() {
+        return hcWorldManager;
+    }
+
+    public DatabaseManager getDb() {
         return db;
     }
 

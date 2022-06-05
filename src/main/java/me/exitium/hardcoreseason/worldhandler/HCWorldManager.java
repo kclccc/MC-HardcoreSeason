@@ -12,6 +12,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class HCWorldManager {
     private final HardcoreSeason plugin;
@@ -24,6 +25,13 @@ public class HCWorldManager {
         Arrays.stream(World.Environment.values()).sequential()
                 .filter(env -> env != World.Environment.CUSTOM)
                 .forEach(this::createWorld);
+    }
+
+    public boolean isHardcoreWorld(String worldName) {
+        String hardcoreName = plugin.getConfig().getString("hardcore-world");
+        return Objects.equals(worldName, hardcoreName) ||
+                Objects.equals(worldName, hardcoreName + "_NETHER") ||
+                Objects.equals(worldName, hardcoreName + "_THE_END");
     }
 
     private HCWorld fromConfig(World.Environment environment) {

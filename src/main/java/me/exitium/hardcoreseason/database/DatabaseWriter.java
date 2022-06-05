@@ -20,4 +20,5 @@ public record DatabaseWriter(HardcoreSeason plugin) {
         }
     }
 
+
 }

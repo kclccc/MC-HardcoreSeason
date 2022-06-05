@@ -1,8 +1,13 @@
 package me.exitium.hardcoreseason;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import net.md_5.bungee.api.ChatColor;
 
+import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class Utils {
@@ -22,5 +27,14 @@ public class Utils {
         long firstLong = bb.getLong();
         long secondLong = bb.getLong();
         return new UUID(firstLong, secondLong);
+    }
+
+    public static Map<String, Integer> jsonToMap(String json) {
+        if (json == null) return new HashMap<>();
+
+        Gson gson = new Gson();
+        Type mapType = new TypeToken<Map<String, Integer>>() {
+        }.getType();
+        return gson.fromJson(json, mapType);
     }
 }

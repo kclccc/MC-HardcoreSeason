@@ -21,12 +21,14 @@ public class DatabaseManager {
         writer = new DatabaseWriter(plugin);
     }
 
-    public DatabaseWriter getWriter(){
+    public DatabaseWriter getWriter() {
         return writer;
     }
-    public DatabaseReader getReader(){
+
+    public DatabaseReader getReader() {
         return reader;
     }
+
     HikariDataSource hikari;
 
     public Connection initHikari() {
@@ -67,6 +69,7 @@ public class DatabaseManager {
                         "trades_made TEXT, " +
                         "food_eaten TEXT, " +
                         "potions_used TEXT " +
+                        "eyes_used TEXT " +
                         "PRIMARY KEY (rowid));")) {
             ps.executeUpdate();
         } catch (Exception e) {

@@ -1,28 +1,17 @@
 package me.exitium.hardcoreseason.statistics;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.internal.LinkedTreeMap;
-import me.exitium.hardcoreseason.HardcoreSeason;
-
-import java.lang.reflect.Type;
-import java.util.Comparator;
 import java.util.Map;
-import java.util.TreeSet;
 
 public class StatisticsHandler {
 
-    private final HardcoreSeason plugin;
-
-    StatisticsHandler(
-            HardcoreSeason plugin, TreeSet<MobKill> mobKillList,
-            TreeSet<DrinkPotion> drinkPotionList,
-            TreeSet<ConsumeFood> consumeFoodList,
-            TreeSet<DamageTaken> damageTakenList,
-            TreeSet<DamageDealt> damageDealtList,
-            TreeSet<ItemCrafted> itemCraftedList,
-            TreeSet<EyeUsed> eyesUsedList){
-        this.plugin = plugin;
+    public StatisticsHandler(
+            Map<String, Integer> mobKillList,
+            Map<String, Integer> drinkPotionList,
+            Map<String, Integer> consumeFoodList,
+            Map<String, Integer> damageTakenList,
+            Map<String, Integer> damageDealtList,
+            Map<String, Integer> itemCraftedList,
+            Map<String, Integer> eyesUsedList) {
         this.mobKillList = mobKillList;
         this.drinkPotionList = drinkPotionList;
         this.consumeFoodList = consumeFoodList;
@@ -32,57 +21,33 @@ public class StatisticsHandler {
         this.eyesUsedList = eyesUsedList;
     }
 
-    public StatisticsHandler(HardcoreSeason plugin) {
-        this.plugin = plugin;
+    enum STATTYPE {
+        MOB_KILL,
+        DRINK_POTION,
+        CONSUME_FOOD,
+        ITEM_CRAFTED,
+        DAMAGE_TAKEN,
+        DAMAGE_DEALT,
+        EYE_USED
     }
 
-    private TreeSet<MobKill> mobKillList = new TreeSet<>(Comparator.reverseOrder());
-    private TreeSet<DrinkPotion> drinkPotionList = new TreeSet<>(Comparator.reverseOrder());
-    private TreeSet<ConsumeFood> consumeFoodList = new TreeSet<>(Comparator.reverseOrder());
-    private TreeSet<DamageTaken> damageTakenList = new TreeSet<>(Comparator.reverseOrder());
-    private TreeSet<DamageDealt> damageDealtList = new TreeSet<>(Comparator.reverseOrder());
-    private TreeSet<ItemCrafted> itemCraftedList = new TreeSet<>(Comparator.reverseOrder());
-    private TreeSet<EyeUsed> eyesUsedList = new TreeSet<>(Comparator.reverseOrder());
+    private Map<String, Integer> mobKillList;
+    private Map<String, Integer> drinkPotionList;
+    private Map<String, Integer> consumeFoodList;
+    private Map<String, Integer> damageTakenList;
+    private Map<String, Integer> damageDealtList;
+    private Map<String, Integer> itemCraftedList;
+    private Map<String, Integer> eyesUsedList;
 
-    private void addMobKill(MobKill mobKill) {
-        mobKillList.add(mobKill);
-    }
-
-    private void addPotionDrank(DrinkPotion drinkPotion) {
-        drinkPotionList.add(drinkPotion);
-    }
-
-    private void addFoodEaten(ConsumeFood consumeFood) {
-        consumeFoodList.add(consumeFood);
-    }
-
-    private void addDamageTaken(DamageTaken damageTaken) {
-        damageTakenList.add(damageTaken);
-    }
-
-    private void addDamageDealt(DamageDealt damageDealt) {
-        damageDealtList.add(damageDealt);
-    }
-
-    private void addItemCrafted(ItemCrafted itemCrafted) {
-        itemCraftedList.add(itemCrafted);
-    }
-
-    private void addEyeUsed(EyeUsed eyeUsed) {
-        eyesUsedList.add(eyeUsed);
-    }
-
-    public TreeSet<?> jsonToTree(String json, Class<?> statClass) {
-        TreeSet<?> tree = new TreeSet<>();
-        GsonBuilder builder = new GsonBuilder();
-        LinkedTreeMap<?,?> map = (LinkedTreeMap<?, ?>) builder.create().fromJson(json, Object.class);
-
-        for(Map.Entry<?, ?> entry : map.entrySet()){
-            String key = (String) entry.getKey();
-            int value = (int) entry.getValue();
-
-            Object objClass = statClass;
-            tree.add();
+    private void addStat(GenericStat stat, STATTYPE type) {
+        switch (type) {
+            case MOB_KILL -> mobKillList.merge(stat.name(), 1, Integer::sum);
+            case DRINK_POTION -> drinkPotionList.merge(stat.name(), 1, Integer::sum);
+            case CONSUME_FOOD -> consumeFoodList.merge(stat.name(), 1, Integer::sum);
+            case DAMAGE_TAKEN -> damageTakenList.merge(stat.name(), 1, Integer::sum);
+            case DAMAGE_DEALT -> damageDealtList.merge(stat.name(), 1, Integer::sum);
+            case ITEM_CRAFTED -> itemCraftedList.merge(stat.name(), 1, Integer::sum);
+            case EYE_USED -> eyesUsedList.merge(stat.name(), 1, Integer::sum);
         }
     }
 }

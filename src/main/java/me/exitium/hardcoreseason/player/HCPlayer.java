@@ -47,10 +47,6 @@ public class HCPlayer {
         this.status = STATUS.ALIVE;
     }
 
-    public HCPlayer newPlayer(UUID uuid) {
-        return new HCPlayer(uuid);
-    }
-
     public UUID getUUID() {
         return uuid;
     }
