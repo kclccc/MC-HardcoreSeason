@@ -74,7 +74,8 @@ public class DatabaseManager {
                         "trades_made TEXT, " +
                         "food_eaten TEXT, " +
                         "potions_used TEXT, " +
-                        "eyes_used TEXT);")) {
+                        "eyes_used TEXT, " +
+                        "CONSTRAINT UQ_user_season UNIQUE(uuid,season_number));")) {
             ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();

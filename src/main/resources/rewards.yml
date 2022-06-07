@@ -1,0 +1,30 @@
+dragontooth_pickaxe:
+  v: 2586
+  type: NETHERITE_PICKAXE
+  meta:
+    ==: ItemMeta
+    meta-type: UNSPECIFIC
+    display-name: '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"light_purple","text":"Dragontooth
+      Pickaxe"}],"text":""}'
+    lore:
+      - '{"extra":[{"text":"It''s bound to your lifeforce but otherwise indestructible."}],"text":""}'
+    enchants:
+      DIG_SPEED: 5
+      LOOT_BONUS_BLOCKS: 5
+      VANISHING_CURSE: 1
+    Unbreakable: true
+
+dragon_artifact:
+  v: 2586
+  type: SHULKER_BOX
+  meta:
+    ==: ItemMeta
+    meta-type: TILE_ENTITY
+    display-name: '{"extra":[{"bold":false,"italic":false,"underlined":false,"strikethrough":false,"obfuscated":false,"color":"light_purple","text":"Dragon
+      Artifact"}],"text":""}'
+    lore:
+      - '{"extra":[{"text":"It feels as though it could survive"}],"text":""}'
+      - '{"extra":[{"text":"interdimensional travel..."}],"text":""}'
+    PublicBukkitValues:
+      hardcoreseason:hc-box: 69i
+    blockMaterial: SHULKER_BOX

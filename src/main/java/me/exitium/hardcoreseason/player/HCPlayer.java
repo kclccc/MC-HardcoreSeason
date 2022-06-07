@@ -17,6 +17,7 @@ public class HCPlayer {
     private final UUID uuid;
     private HCPlayer.STATUS status;
     private StatisticsHandler statistics;
+    private String deathMessage;
 
     private String bedLocation;
     private long time;
@@ -51,7 +52,49 @@ public class HCPlayer {
         return uuid;
     }
 
+    public void setStatus(STATUS status) {
+        this.status = status;
+    }
+
     public STATUS getStatus() {
         return status;
+    }
+
+    public void setBedLocation(String bedLocation) {
+        this.bedLocation = bedLocation;
+    }
+
+    public String getBedLocation() {
+        return bedLocation;
+    }
+
+    public void setArtifactLocation(Location artifactLocation) {
+        this.artifactLocation = artifactLocation;
+    }
+
+    public Location getArtifactLocation() {
+        return this.artifactLocation;
+    }
+
+    public StatisticsHandler getStatistics() {
+        return this.statistics;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public String getReturnLocation() {
+        return returnLocation;
+    }
+
+    public String getDeathMessage() {
+        return deathMessage;
+    }
+
+    public void killPlayer(String deathMessage, Location lastLocation) {
+        this.status = STATUS.DEAD;
+        this.deathMessage = deathMessage;
+        this.lastLocation = lastLocation;
     }
 }

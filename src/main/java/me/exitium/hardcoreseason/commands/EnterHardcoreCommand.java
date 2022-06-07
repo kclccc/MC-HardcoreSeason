@@ -31,7 +31,7 @@ public record EnterHardcoreCommand(HardcoreSeason plugin) implements CommandExec
             plugin.getLogger().info("New player");
 
             HCPlayer hcPlayer = new HCPlayer(player.getUniqueId());
-            db.getWriter().addPlayer(hcPlayer);
+            db.getWriter().updatePlayer(hcPlayer);
             plugin.addOnlinePlayer(hcPlayer);
 
             player.teleport(Bukkit.getWorld("hardcore").getSpawnLocation());

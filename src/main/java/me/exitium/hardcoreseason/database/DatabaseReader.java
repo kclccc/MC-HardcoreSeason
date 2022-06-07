@@ -47,7 +47,8 @@ public record DatabaseReader(HardcoreSeason plugin) {
                                 Utils.jsonToMap(result.getString("damage_taken")),
                                 Utils.jsonToMap(result.getString("damage_dealt")),
                                 Utils.jsonToMap(result.getString("items_crafted")),
-                                Utils.jsonToMap(result.getString("eyes_used"))),
+                                Utils.jsonToMap(result.getString("eyes_used")),
+                                Utils.jsonToMap(result.getString("trades_made"))),
                         result.getString("spawn_point"),
                         result.getInt("time"),
                         result.getString("return_location")

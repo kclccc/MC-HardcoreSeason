@@ -22,7 +22,7 @@ public record HCPlayerJoinEvent(HardcoreSeason plugin) implements Listener {
             }
 
             HCPlayer hcPlayer = new HCPlayer(player.getUniqueId());
-            db.getWriter().addPlayer(hcPlayer);
+            db.getWriter().updatePlayer(hcPlayer);
             plugin.addOnlinePlayer(hcPlayer);
         }
     }
