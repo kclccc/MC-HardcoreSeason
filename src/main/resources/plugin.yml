@@ -3,4 +3,18 @@ version: '${project.version}'
 main: me.exitium.hardcoreseason.HardcoreSeason
 api-version: 1.18
 
-depend: [Vault, Multiverse-Core, Multiverse-Inventories]
+depend: [ Vault, Multiverse-Core, Multiverse-Inventories ]
+
+commands:
+  hchelp:
+    description: Gives information about the hardcore season.
+    aliases: /hc
+    usage: /<command>
+  hcenter:
+    description: Enter the hardcore world.
+    aliases: /hce
+    usage: /<command>
+  hcexit:
+    description: Leave the hardcore world.
+    aliases: /hcl, /hcleave
+    usage: /<command>

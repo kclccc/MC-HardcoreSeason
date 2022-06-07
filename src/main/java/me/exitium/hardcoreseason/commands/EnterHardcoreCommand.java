@@ -4,6 +4,7 @@ import me.exitium.hardcoreseason.HardcoreSeason;
 import me.exitium.hardcoreseason.Utils;
 import me.exitium.hardcoreseason.database.DatabaseManager;
 import me.exitium.hardcoreseason.player.HCPlayer;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -23,13 +24,17 @@ public record EnterHardcoreCommand(HardcoreSeason plugin) implements CommandExec
             DatabaseManager db = plugin.getDb();
             if (db.getReader().hcPlayerExists(player.getUniqueId())) {
                 // TODO: They exist, pull from SQL insert into OnlinePlayers map
-
+                plugin.getLogger().info("HC Player exists!");
                 return true;
             }
 
-            db.getWriter().addPlayer(new HCPlayer(player.getUniqueId()));
+            plugin.getLogger().info("New player");
 
+            HCPlayer hcPlayer = new HCPlayer(player.getUniqueId());
+            db.getWriter().addPlayer(hcPlayer);
+            plugin.addOnlinePlayer(hcPlayer);
 
+            player.teleport(Bukkit.getWorld("hardcore").getSpawnLocation());
         }
         return false;
     }

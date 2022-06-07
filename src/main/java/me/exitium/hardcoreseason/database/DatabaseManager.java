@@ -39,6 +39,8 @@ public class DatabaseManager {
             plugin.getLogger().info("Attempting to connect to SQL...");
             if (!connection.isValid(10)) {
                 plugin.getLogger().warning("SQL could not connect, falling back to SQLITE.");
+                plugin.getConfig().set("storage-type", "SQLITE");
+                plugin.saveConfig();
                 hikari = new Hikari(plugin).setupHikari("SQLITE");
             } else {
                 plugin.getLogger().info("SQL Connection successful!");
@@ -50,10 +52,13 @@ public class DatabaseManager {
         return null;
     }
 
-    public void initTable() {
+    public void initTable(String storageType) {
+        String mysql = storageType.equals("MYSQL")
+                ? "rowid INTEGER PRIMARY KEY AUTO_INCREMENT, "
+                : "";
         try (PreparedStatement ps = plugin.getSqlConnection().prepareStatement(
                 "CREATE TABLE IF NOT EXISTS hardcore_season (" +
-                        "rowid INTEGER NOT NULL AUTO_INCREMENT, " +
+                        mysql +
                         "uuid BINARY(16) NOT NULL, " +
                         "season_number INT NOT NULL, " +
                         "status INT NOT NULL, " +
@@ -68,9 +73,8 @@ public class DatabaseManager {
                         "items_crafted TEXT, " +
                         "trades_made TEXT, " +
                         "food_eaten TEXT, " +
-                        "potions_used TEXT " +
-                        "eyes_used TEXT " +
-                        "PRIMARY KEY (rowid));")) {
+                        "potions_used TEXT, " +
+                        "eyes_used TEXT);")) {
             ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();

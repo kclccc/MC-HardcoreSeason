@@ -1,6 +1,8 @@
 package me.exitium.hardcoreseason;
 
 import com.onarandombox.MultiverseCore.MultiverseCore;
+import me.exitium.hardcoreseason.commands.EnterHardcoreCommand;
+import me.exitium.hardcoreseason.commands.ExitHardcoreCommand;
 import me.exitium.hardcoreseason.database.DatabaseManager;
 import me.exitium.hardcoreseason.player.HCPlayer;
 import me.exitium.hardcoreseason.worldhandler.HCWorldManager;
@@ -17,16 +19,6 @@ import java.util.UUID;
 public final class HardcoreSeason extends JavaPlugin {
     private HardcoreSeason instance;
 
-    public HardcoreSeason getInstance() {
-        return instance;
-    }
-
-    private int seasonNumber;
-
-    public int getSeasonNumber() {
-        return seasonNumber;
-    }
-
     @Override
     public void onLoad() {
         if (instance != null || !Bukkit.getServer().getWorlds().isEmpty() || !Bukkit.getOnlinePlayers().isEmpty()) {
@@ -34,11 +26,6 @@ public final class HardcoreSeason extends JavaPlugin {
         }
         instance = this;
     }
-
-    DatabaseManager db;
-    HCWorldManager hcWorldManager;
-
-    Map<UUID, HCPlayer> onlinePlayers;
 
     @Override
     public void onEnable() {
@@ -54,13 +41,14 @@ public final class HardcoreSeason extends JavaPlugin {
             saveResource("hardcore-worlds.yml", false);
         }
 
+        registerCommands();
+
         seasonNumber = getConfig().getInt("season-number");
-        getLogger().info("season: " + seasonNumber);
+        getLogger().info("Current Hardcore Season: " + seasonNumber);
 
         hcWorldManager = new HCWorldManager(this);
 
         if (seasonNumber == 0) {
-            //TODO: initial setup, generate worlds, setup inventory group, create tables
             getLogger().info("No data found, running initialization.");
             hcWorldManager.createAll();
             getConfig().set("season-number", seasonNumber + 1);
@@ -71,10 +59,19 @@ public final class HardcoreSeason extends JavaPlugin {
         sqlConnection = db.initHikari();
         if (sqlConnection == null) {
             getLogger().warning("SQL Connection is null, data cannot be saved! Please check your config options.");
+        } else {
+            db.initTable(getConfig().getString("storage-type"));
         }
 
         onlinePlayers = new HashMap<>();
     }
+
+    private void registerCommands() {
+        this.getCommand("hcenter").setExecutor(new EnterHardcoreCommand(this));
+        this.getCommand("hcexit").setExecutor(new ExitHardcoreCommand(this));
+    }
+
+    Map<UUID, HCPlayer> onlinePlayers;
 
     public void addOnlinePlayer(HCPlayer player) {
         onlinePlayers.put(player.getUUID(), player);
@@ -84,9 +81,27 @@ public final class HardcoreSeason extends JavaPlugin {
         onlinePlayers.remove(uuid);
     }
 
+    Map<UUID, Integer> teleportingPlayers;
+
+    public Integer getTeleportingPlayer(UUID uuid) {
+        return teleportingPlayers.get(uuid);
+    }
+
+    public void addTeleportingPlayer(UUID uuid, int taskID) {
+        teleportingPlayers.put(uuid, taskID);
+    }
+
+    public void remTeleportingPlayer(UUID uuid) {
+        teleportingPlayers.remove(uuid);
+    }
+
+    HCWorldManager hcWorldManager;
+
     public HCWorldManager getHcWorldManager() {
         return hcWorldManager;
     }
+
+    DatabaseManager db;
 
     public DatabaseManager getDb() {
         return db;
@@ -111,6 +126,13 @@ public final class HardcoreSeason extends JavaPlugin {
         }
         return null;
     }
+
+    private int seasonNumber;
+
+    public int getSeasonNumber() {
+        return seasonNumber;
+    }
+
 
     @Override
     public void onDisable() {

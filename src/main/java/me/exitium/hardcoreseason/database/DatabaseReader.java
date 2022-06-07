@@ -14,20 +14,23 @@ public record DatabaseReader(HardcoreSeason plugin) {
 
     public boolean hcPlayerExists(UUID uuid) {
         try (PreparedStatement ps = plugin.getSqlConnection().prepareStatement(
-                "SELECT TOP 1 FROM hardcore_season WHERE uuid=? AND season_number=?")) {
+                "SELECT 1 FROM hardcore_season WHERE uuid=? AND season_number=?")) {
             ps.setObject(1, Utils.asBytes(uuid));
             ps.setInt(2, plugin.getSeasonNumber());
+
+            ResultSet result = ps.executeQuery();
+            return result.next();
         } catch (SQLException e) {
             // TODO: actual error handling
             e.printStackTrace();
         }
-
-        return false;
+        plugin.getLogger().info("Why did this trigger?");
+        return true;
     }
 
     public HCPlayer getPlayer(UUID uuid) {
         try (PreparedStatement ps = plugin.getSqlConnection().prepareStatement(
-                "SELECT * FROM hardcore_season WHERE uuid=? AND season_number=?")) {
+                "SELECT 1 FROM hardcore_season WHERE uuid=? AND season_number=?")) {
             ps.setObject(1, Utils.asBytes(uuid));
             ps.setInt(2, plugin.getSeasonNumber());
 
