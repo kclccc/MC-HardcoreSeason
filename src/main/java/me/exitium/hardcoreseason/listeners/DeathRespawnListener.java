@@ -3,7 +3,6 @@ package me.exitium.hardcoreseason.listeners;
 import me.exitium.hardcoreseason.HardcoreSeason;
 import me.exitium.hardcoreseason.Utils;
 import me.exitium.hardcoreseason.player.HCPlayer;
-import me.exitium.hardcoreseason.playerdata.HCPlayerController;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,7 +16,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.UUID;
 
 public class DeathRespawnListener implements Listener {
     private final HardcoreSeason plugin;
@@ -70,35 +68,36 @@ public class DeathRespawnListener implements Listener {
     public void onRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();
 
-        if (plugin.isHardcoreWorld(player.getWorld().getName())) {
-            UUID uuid = player.getUniqueId();
-            HCPlayer hcPlayer = plugin.getHcPlayerService().getHardcorePlayer(uuid);
+        if (!plugin.getHcWorldManager().isHardcoreWorld(player.getWorld().getName())) return;
+        HCPlayer hcPlayer = plugin.getOnlinePlayer(player.getUniqueId());
 
-//            System.out.println("FLAGS: " + event.getRespawnFlags());
-            plugin.getLogger().info("RespawnFlags: " + event.getRespawnFlags());
-            if (event.getRespawnFlags().containsAll(Arrays.asList(PlayerRespawnEvent.RespawnFlag.END_PORTAL, PlayerRespawnEvent.RespawnFlag.BED_SPAWN))) {
-                String spawnLocation = hcPlayer.getBedLocation();
-                Location respawnLoc = Bukkit.getWorld(plugin.getHardcoreWorld(World.Environment.NORMAL)).getSpawnLocation();
-
+        if (event.getRespawnFlags().containsAll(Arrays.asList(PlayerRespawnEvent.RespawnFlag.END_PORTAL, PlayerRespawnEvent.RespawnFlag.BED_SPAWN))) {
+            String spawnLocation = hcPlayer.getBedLocation();
+            World hcWorld = Bukkit.getWorld(plugin.getHcWorldManager().getHCWorld(World.Environment.NORMAL));
+            Location respawnLoc = null;
+            if (hcWorld != null) {
+                respawnLoc = hcWorld.getSpawnLocation();
                 if (spawnLocation != null) {
-                    respawnLoc = Utils.processLocationString(Bukkit.getWorld(plugin.getHardcoreWorld(World.Environment.NORMAL)), spawnLocation);
+                    respawnLoc = Utils.processLocationString(hcWorld, spawnLocation);
                 }
 
                 event.setRespawnLocation(respawnLoc);
-                player.sendMessage(Utils.chat("&7Congrats!"));
+                player.sendMessage(Utils.colorize("&7Congrats!"));
+            } else {
+                plugin.getLogger().warning("Getting HCWORLD for environment NORMAL failed!");
             }
+        }
 
-            if (hcPlayer.getStatus() == HCPlayer.STATUS.DEAD) {
-                event.setRespawnLocation(hcPlayer.getLastLocation());
-                player.sendMessage(Utils.chat("&7Better luck next time!"));
+        if (hcPlayer.getStatus() == HCPlayer.STATUS.DEAD) {
+            event.setRespawnLocation(hcPlayer.getLastLocation());
+            player.sendMessage(Utils.colorize("&7Better luck next time!"));
 
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        player.setGameMode(GameMode.SPECTATOR);
-                    }
-                }.runTaskLater(plugin, 1);
-            }
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    player.setGameMode(GameMode.SPECTATOR);
+                }
+            }.runTaskLater(plugin, 1L);
         }
     }
 
@@ -106,10 +105,10 @@ public class DeathRespawnListener implements Listener {
     // onRespawn doesn't give enough information to detect this otherwise.
     @EventHandler
     public void onEndPortal(EntityPortalEnterEvent event) {
-        if (event.getEntity() instanceof Player && event.getLocation().getBlock().getType() == Material.END_PORTAL && event.getLocation().getWorld().getName().equals(plugin.getHardcoreWorld(World.Environment.THE_END))) {
-            UUID uuid = event.getEntity().getUniqueId();
-            HCPlayerController hcPlayerController = new HCPlayerController(plugin.getHcPlayerService().getHardcorePlayer(uuid));
-            hcPlayerController.processPlayerVictory();
+        if (event.getEntity() instanceof Player
+                && event.getLocation().getBlock().getType() == Material.END_PORTAL
+                && event.getLocation().getWorld().getName().equals(plugin.getHcWorldManager().getHCWorld(World.Environment.THE_END))) {
+            plugin.getOnlinePlayer(event.getEntity().getUniqueId()).processVictory();
         }
     }
 }

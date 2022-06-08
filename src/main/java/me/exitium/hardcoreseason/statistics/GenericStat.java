@@ -11,7 +11,7 @@ public class GenericStat implements Comparable<GenericStat> {
         this.name = name;
     }
 
-    GenericStat(String name, int count) {
+    public GenericStat(String name, int count) {
         this.name = name;
         this.count = count;
     }

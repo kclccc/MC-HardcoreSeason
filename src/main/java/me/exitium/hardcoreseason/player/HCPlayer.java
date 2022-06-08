@@ -1,6 +1,6 @@
 package me.exitium.hardcoreseason.player;
 
-import it.unimi.dsi.fastutil.Pair;
+import com.comphenix.protocol.wrappers.Pair;
 import me.exitium.hardcoreseason.statistics.StatisticsHandler;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
@@ -80,8 +80,17 @@ public class HCPlayer {
         return this.statistics;
     }
 
+    public void setTime(long time) {
+        this.time = time;
+    }
+
     public long getTime() {
         return time;
+    }
+
+    public void updateTime() {
+        this.time = (int) (System.currentTimeMillis() - timeCounter) + time;
+        this.timeCounter = System.currentTimeMillis();
     }
 
     public String getReturnLocation() {
@@ -96,5 +105,26 @@ public class HCPlayer {
         this.status = STATUS.DEAD;
         this.deathMessage = deathMessage;
         this.lastLocation = lastLocation;
+    }
+
+    public void processVictory() {
+        this.enterVictoryPortal = true;
+        this.status = STATUS.VICTORY;
+    }
+
+    public Location getLastLocation() {
+        return lastLocation;
+    }
+
+    public Pair<Pair<Location, Location>, Integer> getNetherBedLocation() {
+        return netherBedLocation;
+    }
+
+    public void setNetherBedLocation(Pair<Pair<Location, Location>, Integer> netherBedLocation) {
+        this.netherBedLocation = netherBedLocation;
+    }
+
+    public void setTeleportTaskID(int taskID) {
+        this.teleportTaskID = taskID;
     }
 }

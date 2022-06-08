@@ -53,6 +53,7 @@ public final class HardcoreSeason extends JavaPlugin {
         getLogger().info("Current Hardcore Season: " + seasonNumber);
 
         hcWorldManager = new HCWorldManager(this);
+        hcWorldManager.loadWorldsFromConfig();
 
         if (seasonNumber == 0) {
             getLogger().info("No data found, running initialization.");

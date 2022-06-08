@@ -2,10 +2,9 @@ package me.exitium.hardcoreseason.listeners;
 
 import me.exitium.hardcoreseason.HardcoreSeason;
 import me.exitium.hardcoreseason.Utils;
-import me.exitium.hardcoreseason.playerdata.HCPlayer;
-import me.exitium.hardcoreseason.playerdata.HCPlayerController;
-import me.exitium.hardcoreseason.playerdata.statistics.PlayerStatistics;
-import me.exitium.hardcoreseason.playerdata.statistics.StatisticsManager;
+import me.exitium.hardcoreseason.player.HCPlayer;
+import me.exitium.hardcoreseason.statistics.GenericStat;
+import me.exitium.hardcoreseason.statistics.StatisticsHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -23,6 +22,7 @@ import java.util.UUID;
 
 public class EntityDeathListener implements Listener {
     private final HardcoreSeason plugin;
+
     public EntityDeathListener(HardcoreSeason plugin) {
         this.plugin = plugin;
     }
@@ -30,26 +30,24 @@ public class EntityDeathListener implements Listener {
     @EventHandler
     public void onEntityDeath(EntityDeathEvent event) {
         String world = event.getEntity().getWorld().getName();
-        if (plugin.isHardcoreWorld(world)) {
-            Player killer = event.getEntity().getKiller();
-            if (killer != null) {
-                PlayerStatistics playerStats = plugin.getHcPlayerService().getHardcorePlayer(killer.getUniqueId()).getStatistics();
-                StatisticsManager sm = new StatisticsManager(plugin.getHcPlayerService().getHardcorePlayer(killer.getUniqueId()).getStatistics());
-                sm.addMonsterKill(event.getEntity());
-            }
+        if (!(plugin.getHcWorldManager().isHardcoreWorld(world))) return;
+
+        Player killer = event.getEntity().getKiller();
+        if (killer != null) {
+            plugin.getOnlinePlayer(killer.getUniqueId()).getStatistics().addStat(new GenericStat(
+                    event.getEntity().getName()), StatisticsHandler.STATTYPE.MOB_KILL);
         }
 
         // Track dragonkills
         if (event.getEntityType() == EntityType.ENDER_DRAGON) {
             Entity enderDragon = event.getEntity();
-            if (Objects.equals(enderDragon.getLocation().getWorld().getName(), plugin.getHardcoreWorld(World.Environment.THE_END))) {
-                Collection<Player> nearbyPlayers = enderDragon.getLocation().getNearbyPlayers(50,50,50);
-//                nearbyPlayers.forEach(this::processKill);
+            if (Objects.equals(enderDragon.getLocation().getWorld().getName(), plugin.getHcWorldManager().getHCWorld(World.Environment.THE_END))) {
+                Collection<Player> nearbyPlayers = enderDragon.getLocation().getNearbyPlayers(50, 50, 50);
 
-                for(Player p : nearbyPlayers){
-                    PlayerStatistics playerStats = plugin.getHcPlayerService().getHardcorePlayer(p.getUniqueId()).getStatistics();
-                    StatisticsManager sm = new StatisticsManager(plugin.getHcPlayerService().getHardcorePlayer(p.getUniqueId()).getStatistics());
-                    sm.addMonsterKill(enderDragon);
+                for (Player p : nearbyPlayers) {
+                    plugin.getOnlinePlayer(p.getUniqueId()).getStatistics().addStat(
+                            new GenericStat(enderDragon.getName()),
+                            StatisticsHandler.STATTYPE.MOB_KILL);
                     processKill(p);
                 }
             }
@@ -59,17 +57,15 @@ public class EntityDeathListener implements Listener {
     private void processKill(Entity entity) {
         Player player = (Player) entity;
         UUID uuid = player.getUniqueId();
-        HCPlayer hcPlayer = plugin.getHcPlayerService().getHardcorePlayer(uuid);
-        HCPlayerController hcPlayerController = new HCPlayerController(hcPlayer);
-        hcPlayerController.processPlayerVictory();
+        HCPlayer hcPlayer = plugin.getOnlinePlayer(uuid);
+        hcPlayer.processVictory();
 
-        if(hcPlayerController.firstDragonKill()) {
-//        if (hcPlayer.getDragonKill() != 1) {
+        if (hcPlayer.getStatistics().isFirstDragonKill() == 0) {
             giveItem(uuid);
             itemRoll(uuid);
-            player.sendMessage(Utils.chat("&6Victory!"));
+            player.sendMessage(Utils.colorize("&6Victory!"));
         } else {
-            player.sendMessage(Utils.chat("&7You've already been &6rewarded &7this season."));
+            player.sendMessage(Utils.colorize("&7You've already been &6rewarded &7this season."));
         }
         System.out.printf("Player %s credited with dragon kill.%n", player.getName());
     }
@@ -79,8 +75,7 @@ public class EntityDeathListener implements Listener {
         ItemStack artifact = ItemStack.deserialize(plugin.getRewardsConfig().getConfigurationSection("dragon_artifact").getValues(true));
         player.getInventory().addItem(artifact);
     }
-
-
+    
     private void itemRoll(UUID uuid) {
         Player player = (Player) Bukkit.getOfflinePlayer(uuid);
         FileConfiguration rewards = plugin.getRewardsConfig();

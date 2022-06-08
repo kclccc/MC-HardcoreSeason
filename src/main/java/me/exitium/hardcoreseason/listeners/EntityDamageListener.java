@@ -3,10 +3,9 @@ package me.exitium.hardcoreseason.listeners;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import me.exitium.hardcoreseason.HardcoreSeason;
-import me.exitium.hardcoreseason.playerdata.HCPlayer;
-import me.exitium.hardcoreseason.playerdata.HCPlayerController;
-import me.exitium.hardcoreseason.playerdata.HCPlayerManager;
-import me.exitium.hardcoreseason.playerdata.statistics.StatisticsManager;
+import me.exitium.hardcoreseason.player.HCPlayer;
+import me.exitium.hardcoreseason.statistics.GenericStat;
+import me.exitium.hardcoreseason.statistics.StatisticsHandler;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
@@ -48,46 +47,56 @@ public class EntityDamageListener implements Listener {
 
     @EventHandler
     public void onEntityDamageByEntityEvent(EntityDamageByEntityEvent event) {
-        if (plugin.isHardcoreWorld(event.getEntity().getWorld().getName())) {
-            Entity damageSender = event.getDamager();
-            Entity damageReceiver = event.getEntity();
-            double damageAmount = event.getFinalDamage();
-            boolean isPlayerShooter = damageSender instanceof Projectile && ((Projectile) damageSender).getShooter() instanceof Player;
+        if (!(plugin.getHcWorldManager().isHardcoreWorld(event.getEntity().getWorld().getName()))) return;
+        Entity damageSender = event.getDamager();
+        Entity damageReceiver = event.getEntity();
+        double damageAmount = event.getFinalDamage();
+        boolean isPlayerShooter = damageSender instanceof Projectile && ((Projectile) damageSender).getShooter() instanceof Player;
 
-            HCPlayerManager hcPlayerManager = plugin.getHcPlayerService();
+        // Player damages non-player
+        if (damageSender instanceof Player && !(damageReceiver instanceof Player)) {
+            Material weapon = ((Player) damageSender).getInventory().getItemInMainHand().getType();
+            plugin.getOnlinePlayer(damageSender.getUniqueId()).getStatistics().addStat(
+                    new GenericStat(weapon.name(), (int) damageAmount),
+                    StatisticsHandler.STATTYPE.DAMAGE_DEALT);
+        }
 
-            if (damageSender instanceof Player && !(damageReceiver instanceof Player)) {
-                UUID damageSenderUUID = damageSender.getUniqueId();
-                Material weapon = ((Player) damageSender).getInventory().getItemInMainHand().getType();
-                new StatisticsManager(hcPlayerManager.getHardcorePlayer(damageSenderUUID).getStatistics()).updateDamageDealt(weapon, (int) damageAmount);
-//                new HCPlayerController(hcPlayerManager.getHardcorePlayer(damageSenderUUID)).updateDamageDealt(weapon, (int) damageAmount);
-            }
-            if (damageReceiver instanceof Player && !(damageSender instanceof Player)) {
-                UUID damageReceiverUUID = damageReceiver.getUniqueId();
-                HCPlayerController hcPlayerController = new HCPlayerController(hcPlayerManager.getHardcorePlayer(damageReceiverUUID));
-                StatisticsManager sm = new StatisticsManager(hcPlayerManager.getHardcorePlayer(damageReceiverUUID).getStatistics());
+        // Player receives damage from non-player
+        if (damageReceiver instanceof Player && !(damageSender instanceof Player)) {
+            HCPlayer hcPlayer = plugin.getOnlinePlayer(damageReceiver.getUniqueId());
 
-                if(damageSender instanceof Projectile) {
-                    sm.updateDamageTaken(((Projectile) damageSender).getShooter().toString().replace("Craft", ""), (int) damageAmount);
-//                    hcPlayerController.updateDamageTaken(((Projectile) damageSender).getShooter().toString().replace("Craft", ""), (int) damageAmount);
-                } else {
-                    sm.updateDamageTaken(damageSender.getName(), (int) damageAmount);
-//                    hcPlayerController.updateDamageTaken(damageSender.getName(), (int) damageAmount);
-                }
+            if (damageSender instanceof Projectile) {
+                hcPlayer.getStatistics().addStat(new GenericStat(
+                                ((Projectile) damageSender).getShooter().toString().replace("Craft", ""), (int) damageAmount),
+                        StatisticsHandler.STATTYPE.DAMAGE_TAKEN);
+            } else {
+                hcPlayer.getStatistics().addStat(new GenericStat(
+                                damageSender.getName(), (int) damageAmount),
+                        StatisticsHandler.STATTYPE.DAMAGE_TAKEN);
             }
-            if (isPlayerShooter && !(damageReceiver instanceof Player)) {
-                UUID playerShooterUUID = ((Player) ((Projectile) damageSender).getShooter()).getUniqueId();
-                Material weapon = ((Player) ((Projectile) damageSender).getShooter()).getInventory().getItemInMainHand().getType();
-                new StatisticsManager(hcPlayerManager.getHardcorePlayer(playerShooterUUID).getStatistics()).updateDamageDealt(weapon, (int) damageAmount);
-//                new HCPlayerController(hcPlayerManager.getHardcorePlayer(playerShooterUUID)).updateDamageDealt(weapon, (int) damageAmount);
-            }
-            if(damageSender instanceof Player && damageReceiver instanceof Player){
-                Material weapon = ((Player) damageSender).getInventory().getItemInMainHand().getType();
-                new StatisticsManager(hcPlayerManager.getHardcorePlayer(damageSender.getUniqueId()).getStatistics()).updateDamageDealt(weapon, (int) damageAmount);
-                new StatisticsManager(hcPlayerManager.getHardcorePlayer(damageReceiver.getUniqueId()).getStatistics()).updateDamageTaken("Friendly Fire", (int) damageAmount);
-//                new HCPlayerController(hcPlayerManager.getHardcorePlayer(damageSender.getUniqueId())).updateDamageDealt(weapon, (int) damageAmount);
-//                new HCPlayerController(hcPlayerManager.getHardcorePlayer(damageReceiver.getUniqueId())).updateDamageTaken("Friendly Fire", (int) damageAmount);
-            }
+        }
+
+        // Player shoots a projectile at a non-player
+        if (isPlayerShooter && !(damageReceiver instanceof Player)) {
+            Material weapon = ((Player) ((Projectile) damageSender).getShooter()).getInventory().getItemInMainHand().getType();
+            plugin.getOnlinePlayer(((Player) ((Projectile) damageSender).getShooter()).getUniqueId()).getStatistics().addStat(
+                    new GenericStat(weapon.name(), (int) damageAmount),
+                    StatisticsHandler.STATTYPE.DAMAGE_DEALT);
+        }
+
+        // Player damages another player
+        if (damageSender instanceof Player && damageReceiver instanceof Player) {
+            Material weapon = ((Player) damageSender).getInventory().getItemInMainHand().getType();
+            HCPlayer attackingPlayer = plugin.getOnlinePlayer(damageSender.getUniqueId());
+            HCPlayer receivingPlayer = plugin.getOnlinePlayer(damageReceiver.getUniqueId());
+
+            attackingPlayer.getStatistics().addStat(new GenericStat(
+                            weapon.name(), (int) damageAmount),
+                    StatisticsHandler.STATTYPE.DAMAGE_DEALT);
+
+            receivingPlayer.getStatistics().addStat(new GenericStat(
+                            "Friendly Fire", (int) damageAmount),
+                    StatisticsHandler.STATTYPE.DAMAGE_TAKEN);
         }
     }
 
@@ -105,59 +114,55 @@ public class EntityDamageListener implements Listener {
         Entity entity = event.getEntity();
         String worldName = entity.getWorld().getName();
 
-        if (plugin.isHardcoreWorld(worldName)) {
-            if (entity instanceof Player) {
-                if (!ENTITY_DAMAGE_CAUSES.contains(event.getCause())) {
-                    UUID uuid = event.getEntity().getUniqueId();
-                    double finalDamage = event.getFinalDamage();
+        if (!(plugin.getHcWorldManager().isHardcoreWorld(worldName))) return;
+        if (!(entity instanceof Player)) return;
+        if (!ENTITY_DAMAGE_CAUSES.contains(event.getCause())) {
+            double finalDamage = event.getFinalDamage();
 
-                    new StatisticsManager(plugin.getHcPlayerService().getHardcorePlayer(uuid).getStatistics()).updateDamageTaken(event.getCause().toString(), (int) finalDamage);
-//                    new HCPlayerController(plugin.getHcPlayerService().getHardcorePlayer(uuid)).updateDamageTaken(event.getCause().toString(), (int) finalDamage);
-                }
-            }
+            plugin.getOnlinePlayer(event.getEntity().getUniqueId()).getStatistics().addStat(
+                    new GenericStat(event.getCause().toString(), (int) event.getFinalDamage()),
+                    StatisticsHandler.STATTYPE.DAMAGE_TAKEN);
+        }
 
-            if ((worldName.equals(plugin.getHardcoreWorld(World.Environment.NETHER)) || worldName.equals(plugin.getHardcoreWorld(World.Environment.THE_END)))
-                    && event.getCause() == EntityDamageEvent.DamageCause.BLOCK_EXPLOSION) {
-                double finalDamage = event.getFinalDamage();
+        if ((worldName.equals(plugin.getHcWorldManager().getHCWorld(World.Environment.NETHER)) || worldName.equals(plugin.getHcWorldManager().getHCWorld(World.Environment.THE_END)))
+                && event.getCause() == EntityDamageEvent.DamageCause.BLOCK_EXPLOSION) {
+            List<Entity> entities = new ArrayList<>();
+            entity.getNearbyEntities(7, 7, 7).stream().filter(e -> e instanceof Player).forEach(entities::add);
 
-                List<Entity> entities = new ArrayList<>();
-                entity.getNearbyEntities(7, 7, 7).stream().filter(e -> e instanceof Player).forEach(entities::add);
-
-                for (Entity e : entities) {
-                    processNetherBed(e, finalDamage);
-                }
+            for (Entity e : entities) {
+                processNetherBed(e, event.getFinalDamage());
             }
         }
+
     }
 
     private void processNetherBed(Entity e, double finalDamage) {
         UUID uuid = e.getUniqueId();
-        HCPlayerManager hcPlayerManager = plugin.getHcPlayerService();
-        HCPlayer hcPlayer = hcPlayerManager.getHardcorePlayer(uuid);
+        HCPlayer hcPlayer = plugin.getOnlinePlayer(uuid);
 
-        if (hcPlayerManager.getNetherBedUses(uuid) != null) {
-            int possibleEntityCount = hcPlayerManager.getNetherBedUses(uuid).getSecond();
+        if (hcPlayer.getNetherBedLocation() != null) {
+            int possibleEntityCount = hcPlayer.getNetherBedLocation().getSecond();
 
-            if(possibleEntityCount > 0) {
-//                plugin.getLogger().info("Processing possible damaged entity with damage: " + finalDamage + ", remaining count: " + possibleEntityCount);
-                new StatisticsManager(hcPlayer.getStatistics()).updateDamageDealt(Material.BLACK_BED, (int) finalDamage);
-//                new HCPlayerController(hcPlayer).updateDamageDealt(Material.BLACK_BED, (int) finalDamage);
-                hcPlayerManager.getNetherBedUses(uuid).setSecond(possibleEntityCount - 1);
-            } else if(possibleEntityCount == 0) {
+            if (possibleEntityCount > 0) {
+                hcPlayer.getStatistics().addStat(new GenericStat(
+                                "Bed", (int) finalDamage),
+                        StatisticsHandler.STATTYPE.DAMAGE_DEALT);
+
+                hcPlayer.getNetherBedLocation().setSecond(possibleEntityCount - 1);
+            } else if (possibleEntityCount == 0) {
                 hcPlayer.setNetherBedLocation(null);
             } else {
-                plugin.getLogger().info("Entity count less than 0.");
+                plugin.getLogger().warning("Entity count less than 0.");
             }
         }
     }
 
     @EventHandler
     public void onEntityPickupItem(EntityPickupItemEvent event) {
-        if (event.getEntity() instanceof Player player && plugin.isHardcoreWorld(event.getEntity().getWorld().getName())) {
-            UUID uuid = player.getUniqueId();
-            if (plugin.getHcPlayerService().getHardcorePlayer(uuid).getStatus() == HCPlayer.STATUS.DEAD) {
-                event.setCancelled(true);
-            }
+        if (!(plugin.getHcWorldManager().isHardcoreWorld(event.getEntity().getWorld().getName()))) return;
+        if (!(event.getEntity() instanceof Player player)) return;
+        if (plugin.getOnlinePlayer(player.getUniqueId()).getStatus() == HCPlayer.STATUS.DEAD) {
+            event.setCancelled(true);
         }
     }
 }

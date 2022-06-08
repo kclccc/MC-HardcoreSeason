@@ -58,6 +58,10 @@ public class StatisticsHandler {
         }
     }
 
+    public int isFirstDragonKill() {
+        return mobKillList.get("Ender Dragon");
+    }
+
     public String jsonMobKillList() {
         return new GsonBuilder().create().toJson(mobKillList);
     }
