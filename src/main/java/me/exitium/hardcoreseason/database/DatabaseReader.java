@@ -8,6 +8,8 @@ import me.exitium.hardcoreseason.statistics.StatisticsHandler;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public record DatabaseReader(HardcoreSeason plugin) {
@@ -56,6 +58,24 @@ public record DatabaseReader(HardcoreSeason plugin) {
             }
         } catch (SQLException e) {
             // TODO: Actual error handling
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<UUID> getAllPlayers() {
+        try (PreparedStatement ps = plugin.getSqlConnection().prepareStatement(
+                "SELECT uuid FROM hardcore_season WHERE season_number=?")) {
+            ps.setInt(1, plugin.getSeasonNumber());
+
+            ResultSet results = ps.executeQuery();
+
+            List<UUID> playerList = new ArrayList<>();
+            while(results.next()){
+                playerList.add(Utils.asUuid(results.getBytes("uuid")));
+            }
+            return playerList;
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return null;

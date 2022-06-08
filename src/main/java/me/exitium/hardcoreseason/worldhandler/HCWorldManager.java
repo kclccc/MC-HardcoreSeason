@@ -18,12 +18,12 @@ import java.util.Objects;
 
 public class HCWorldManager {
     private final HardcoreSeason plugin;
+    Map<World.Environment, String> hardcoreWorlds;
+    World softcoreWorld;
 
     public HCWorldManager(HardcoreSeason plugin) {
         this.plugin = plugin;
     }
-
-    Map<World.Environment, String> hardcoreWorlds;
 
     public void loadWorldsFromConfig() {
         File hcWorldsFile = new File(plugin.getDataFolder(), "hardcore-worlds.yml");
@@ -38,10 +38,28 @@ public class HCWorldManager {
         hardcoreWorlds.put(World.Environment.NORMAL, hcWorldsConfig.getString("NORMAL.name"));
         hardcoreWorlds.put(World.Environment.NETHER, hcWorldsConfig.getString("NETHER.name"));
         hardcoreWorlds.put(World.Environment.THE_END, hcWorldsConfig.getString("THE_END.name"));
+
+        String scWorldName = plugin.getConfig().getString("softcore-world");
+        if(scWorldName == null || scWorldName.equals("")) {
+            plugin.getLogger().warning("Could not find a valid world: " + scWorldName + ". Trying 'world'");
+            scWorldName = "world";
+        }
+        softcoreWorld = Bukkit.getWorld(scWorldName);
+        if(softcoreWorld == null) {
+            plugin.getLogger().warning("Softcore world is NULL, plugin may not operate correctly. Check config!");
+        }
+    }
+
+    public Map<World.Environment, String> getHardcoreWorlds() {
+        return hardcoreWorlds;
     }
 
     public String getHCWorld(World.Environment env) {
         return hardcoreWorlds.get(env);
+    }
+
+    public World getSoftcoreWorld() {
+        return softcoreWorld;
     }
 
     public void createAll() {

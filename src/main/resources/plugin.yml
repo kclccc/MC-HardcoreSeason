@@ -18,3 +18,7 @@ commands:
     description: Leave the hardcore world.
     aliases: /hcl, /hcleave
     usage: /<command>
+  hclist:
+    description: Show all hardcore players and their status.
+    aliases: /hcwho
+    usage: /<command>

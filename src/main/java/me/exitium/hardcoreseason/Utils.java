@@ -11,6 +11,7 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class Utils {
     public static String colorize(final String text) {
@@ -48,5 +49,12 @@ public class Utils {
         double pSpawnZ = Double.parseDouble(splitLoc[2]);
 
         return new Location(world, pSpawnX, pSpawnY, pSpawnZ);
+    }
+
+    public static String convertTime(long millis){
+        return String.format("%02d:%02d",
+                TimeUnit.MILLISECONDS.toHours(millis),
+                TimeUnit.MILLISECONDS.toMinutes(millis) -
+                        TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)));
     }
 }

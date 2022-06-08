@@ -2,8 +2,13 @@ package me.exitium.hardcoreseason;
 
 import com.onarandombox.MultiverseCore.MultiverseCore;
 import com.onarandombox.multiverseinventories.MultiverseInventories;
+import com.onarandombox.multiverseinventories.WorldGroup;
+import com.onarandombox.multiverseinventories.profile.WorldGroupManager;
+import com.onarandombox.multiverseinventories.share.Sharables;
 import me.exitium.hardcoreseason.commands.EnterHardcoreCommand;
 import me.exitium.hardcoreseason.commands.ExitHardcoreCommand;
+import me.exitium.hardcoreseason.commands.GetStatbookCommand;
+import me.exitium.hardcoreseason.commands.ShowScoreboardCommand;
 import me.exitium.hardcoreseason.database.DatabaseManager;
 import me.exitium.hardcoreseason.player.HCPlayer;
 import me.exitium.hardcoreseason.worldhandler.HCWorldManager;
@@ -18,12 +23,19 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.sql.Connection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public final class HardcoreSeason extends JavaPlugin {
+    private static Permission perms = null;
+    Map<UUID, HCPlayer> onlinePlayers;
+    Map<UUID, Integer> teleportingPlayers;
+    HCWorldManager hcWorldManager;
+    DatabaseManager db;
+    Connection sqlConnection;
+    MultiverseCore multiverseCore;
     private HardcoreSeason instance;
+    private YamlConfiguration rewardsConfig;
+    private int seasonNumber;
 
     @Override
     public void onLoad() {
@@ -75,23 +87,35 @@ public final class HardcoreSeason extends JavaPlugin {
             db.initTable(storageType);
         }
 
+        setupPermissions();
+        setupMVInventoryGroups();
+
         onlinePlayers = new HashMap<>();
     }
 
     private void registerCommands() {
-        PluginCommand enterCommand = this.getCommand("hcenter");
-        PluginCommand exitCommand = this.getCommand("hcexit");
+        Map<String, PluginCommand> commandList = new HashMap<>() {{
+           put("enterCommand", getCommand("hcenter"));
+           put("exitCommand", getCommand("hcexit"));
+           put("statsCommand", getCommand("hcstats"));
+           put("scoreboardCommand", getCommand("hclist"));
+        }};
 
-        if (enterCommand == null || exitCommand == null) {
-            getLogger().warning("Failed to find one or more commands, Plugin may not work properly!");
-            return;
+        for(Map.Entry<String, PluginCommand> entry : commandList.entrySet()){
+            if(entry.getValue() == null) {
+                getLogger().warning("Failed to register command: " + entry.getKey());
+                commandList.remove(entry.getKey());
+                break;
+            }
+
+            switch(entry.getKey()) {
+                case "enterCommand" -> entry.getValue().setExecutor(new EnterHardcoreCommand(this));
+                case "exitCommand" -> entry.getValue().setExecutor(new ExitHardcoreCommand(this));
+                case "statsCommand" -> entry.getValue().setExecutor(new GetStatbookCommand(this));
+                case "scoreboardCommand" -> entry.getValue().setExecutor(new ShowScoreboardCommand(this));
+            }
         }
-
-        enterCommand.setExecutor(new EnterHardcoreCommand(this));
-        exitCommand.setExecutor(new ExitHardcoreCommand(this));
     }
-
-    Map<UUID, HCPlayer> onlinePlayers;
 
     public HCPlayer getOnlinePlayer(UUID uuid) {
         return onlinePlayers.get(uuid);
@@ -105,8 +129,6 @@ public final class HardcoreSeason extends JavaPlugin {
         onlinePlayers.remove(uuid);
     }
 
-    Map<UUID, Integer> teleportingPlayers;
-
     public Integer getTeleportingPlayer(UUID uuid) {
         return teleportingPlayers.get(uuid);
     }
@@ -119,31 +141,21 @@ public final class HardcoreSeason extends JavaPlugin {
         teleportingPlayers.remove(uuid);
     }
 
-    HCWorldManager hcWorldManager;
-
     public HCWorldManager getHcWorldManager() {
         return hcWorldManager;
     }
-
-    DatabaseManager db;
 
     public DatabaseManager getDb() {
         return db;
     }
 
-    Connection sqlConnection;
-
     public Connection getSqlConnection() {
         return sqlConnection;
     }
 
-    MultiverseCore multiverseCore;
-
     public MultiverseCore getMultiverseCore() {
         return multiverseCore;
     }
-
-    private YamlConfiguration rewardsConfig;
 
     public YamlConfiguration getRewardsConfig() {
         return rewardsConfig;
@@ -189,23 +201,21 @@ public final class HardcoreSeason extends JavaPlugin {
         throw new RuntimeException("Multiverse-Inventories not found!");
     }
 
-//    private void setupMVInventoryGroups() {
-//        WorldGroupManager groupManager = getMultiverseInventories().getGroupManager();
-//        if (groupManager.getGroup("Hardcore") == null) {
-//            WorldGroup worldGroup = groupManager.newEmptyGroup("Hardcore");
-//            getHardcoreWorlds().forEach((k, v) -> worldGroup.addWorld(v));
-//            worldGroup.getShares().addAll(Sharables.all());
-//            groupManager.updateGroup(worldGroup);
-//        }
-//    }
-
-    private int seasonNumber;
+    private void setupMVInventoryGroups() {
+        WorldGroupManager groupManager = getMultiverseInventories().getGroupManager();
+        if (groupManager.getGroup("Hardcore") == null) {
+            getLogger().info("Multiverse-Inventories HARDCORE group not found, creating!");
+            WorldGroup worldGroup = groupManager.newEmptyGroup("Hardcore");
+            getHcWorldManager().getHardcoreWorlds().forEach(
+                    (k, v) -> worldGroup.addWorld(v));
+            worldGroup.getShares().addAll(Sharables.all());
+            groupManager.updateGroup(worldGroup);
+        }
+    }
 
     public int getSeasonNumber() {
         return seasonNumber;
     }
-
-    private static Permission perms = null;
 
     private void setupPermissions() {
         RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager().getRegistration(Permission.class);

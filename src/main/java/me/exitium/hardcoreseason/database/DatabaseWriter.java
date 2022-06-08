@@ -48,14 +48,14 @@ public record DatabaseWriter(HardcoreSeason plugin) {
             ps.setString(5, player.getBedLocation());
             ps.setString(6, player.getDeathMessage());
             ps.setString(7, player.getReturnLocation());
-            ps.setString(8, player.getStatistics().jsonMobKillList());
-            ps.setString(9, player.getStatistics().jsonDamageTakenList());
-            ps.setString(10, player.getStatistics().jsonDamageDealtList());
-            ps.setString(11, player.getStatistics().jsonItemCraftedList());
-            ps.setString(12, player.getStatistics().jsonTradesList());
-            ps.setString(13, player.getStatistics().jsonFoodList());
-            ps.setString(14, player.getStatistics().jsonPotionList());
-            ps.setString(15, player.getStatistics().jsonEyesUsedList());
+            ps.setString(8, player.getStatistics().toJson(player.getStatistics().getMobKillList()));
+            ps.setString(9, player.getStatistics().toJson(player.getStatistics().getDamageTakenList()));
+            ps.setString(10, player.getStatistics().toJson(player.getStatistics().getDamageDealtList()));
+            ps.setString(11, player.getStatistics().toJson(player.getStatistics().getItemCraftedList()));
+            ps.setString(12, player.getStatistics().toJson(player.getStatistics().getTradesList()));
+            ps.setString(13, player.getStatistics().toJson(player.getStatistics().getConsumeFoodList()));
+            ps.setString(14, player.getStatistics().toJson(player.getStatistics().getDrinkPotionList()));
+            ps.setString(15, player.getStatistics().toJson(player.getStatistics().getEyesUsedList()));
 
             ps.executeUpdate();
         } catch (SQLException e) {

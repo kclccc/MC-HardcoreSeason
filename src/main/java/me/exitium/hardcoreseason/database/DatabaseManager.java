@@ -13,6 +13,7 @@ public class DatabaseManager {
 
     DatabaseWriter writer;
     DatabaseReader reader;
+    HikariDataSource hikari;
 
     public DatabaseManager(HardcoreSeason plugin) {
         this.plugin = plugin;
@@ -28,8 +29,6 @@ public class DatabaseManager {
     public DatabaseReader getReader() {
         return reader;
     }
-
-    HikariDataSource hikari;
 
     public Connection initHikari() {
         String storageType = plugin.getConfig().getString("storage-type");
