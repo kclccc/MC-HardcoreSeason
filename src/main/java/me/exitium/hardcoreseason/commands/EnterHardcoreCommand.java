@@ -2,9 +2,9 @@ package me.exitium.hardcoreseason.commands;
 
 import me.exitium.hardcoreseason.HardcoreSeason;
 import me.exitium.hardcoreseason.Utils;
-import me.exitium.hardcoreseason.database.DatabaseManager;
 import me.exitium.hardcoreseason.player.HCPlayer;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -17,25 +17,29 @@ public record EnterHardcoreCommand(HardcoreSeason plugin) implements CommandExec
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Command cannot be run from console!");
         } else {
-            if (!plugin.getHcWorldManager().isHardcoreWorld(player.getWorld().getName())) {
+            if (plugin.getHcWorldManager().isHardcoreWorld(player.getWorld().getName())) {
                 player.sendMessage(Utils.colorize("&7You are already in an HC world!"));
+                return false;
             }
 
-            DatabaseManager db = plugin.getDb();
-            if (db.getReader().hcPlayerExists(player.getUniqueId())) {
-                // TODO: They exist, pull from SQL insert into OnlinePlayers map
+            if (plugin.getDb().getReader().hcPlayerExists(player.getUniqueId())) {
                 plugin.getLogger().info("HC Player exists!");
-                return true;
+                HCPlayer hcPlayer = plugin.getDb().getReader().getPlayer(player.getUniqueId());
+                plugin.addOnlinePlayer(hcPlayer);
+            } else {
+                HCPlayer hcPlayer = new HCPlayer(player.getUniqueId());
+                plugin.getDb().getWriter().updatePlayer(hcPlayer);
+                plugin.addOnlinePlayer(hcPlayer);
             }
 
-            plugin.getLogger().info("New player");
-
-            HCPlayer hcPlayer = new HCPlayer(player.getUniqueId());
-            db.getWriter().updatePlayer(hcPlayer);
-            plugin.addOnlinePlayer(hcPlayer);
-
-            player.teleport(Bukkit.getWorld("hardcore").getSpawnLocation());
+            World hcWorld = Bukkit.getWorld(plugin.getHcWorldManager().getHCWorld(World.Environment.NORMAL));
+            if (hcWorld == null) {
+                plugin.getLogger().warning("Hardcore world was NULL!");
+                player.sendMessage(Utils.colorize("&cCould not teleport you to the hardcore world!"));
+                return false;
+            }
+            player.teleport(hcWorld.getSpawnLocation());
         }
-        return false;
+        return true;
     }
 }

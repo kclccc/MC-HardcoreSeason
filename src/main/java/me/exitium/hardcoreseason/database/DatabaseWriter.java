@@ -22,14 +22,14 @@ public record DatabaseWriter(HardcoreSeason plugin) {
             e.printStackTrace();
         }
     }
-    
+
     public void updatePlayer(HCPlayer player) {
         try (PreparedStatement ps = plugin.getSqlConnection().prepareStatement(
                 "INSERT INTO hardcore_season (uuid, season_number, status, time, spawn_point, death_type, return_location, " +
                         "monster_kills, damage_taken, damage_dealt, items_crafted, trades_made, food_eaten, potions_used, eyes_used) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
-                        "ON DUPLICATE KEY " +
-                        "UPDATE time=VALUES(time), " +
+                        "ON DUPLICATE KEY UPDATE " +
+                        "time=VALUES(time), " +
                         "spawn_point=VALUES(spawn_point), " +
                         "death_type=VALUES(death_type), " +
                         "return_location=VALUES(return_location)," +
@@ -41,6 +41,7 @@ public record DatabaseWriter(HardcoreSeason plugin) {
                         "food_eaten=VALUES(food_eaten), " +
                         "potions_used=VALUES(potions_used), " +
                         "eyes_used=VALUES(eyes_used)")) {
+
             ps.setObject(1, Utils.asBytes(player.getUUID()));
             ps.setInt(2, plugin.getSeasonNumber());
             ps.setInt(3, player.getStatus().ordinal());

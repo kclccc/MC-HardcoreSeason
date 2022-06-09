@@ -22,3 +22,7 @@ commands:
     description: Show all hardcore players and their status.
     aliases: /hcwho
     usage: /<command>
+  hcstats:
+    description: Get a book containing hardcore statistics.
+    aliases: /hcs
+    usage: /<command>

@@ -13,6 +13,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -34,18 +35,18 @@ public class HCWorldManager {
             plugin.getLogger().warning("Could not load world config.");
             e.printStackTrace();
         }
-
+        hardcoreWorlds = new HashMap<>();
         hardcoreWorlds.put(World.Environment.NORMAL, hcWorldsConfig.getString("NORMAL.name"));
         hardcoreWorlds.put(World.Environment.NETHER, hcWorldsConfig.getString("NETHER.name"));
         hardcoreWorlds.put(World.Environment.THE_END, hcWorldsConfig.getString("THE_END.name"));
 
         String scWorldName = plugin.getConfig().getString("softcore-world");
-        if(scWorldName == null || scWorldName.equals("")) {
+        if (scWorldName == null || scWorldName.equals("")) {
             plugin.getLogger().warning("Could not find a valid world: " + scWorldName + ". Trying 'world'");
             scWorldName = "world";
         }
         softcoreWorld = Bukkit.getWorld(scWorldName);
-        if(softcoreWorld == null) {
+        if (softcoreWorld == null) {
             plugin.getLogger().warning("Softcore world is NULL, plugin may not operate correctly. Check config!");
         }
     }

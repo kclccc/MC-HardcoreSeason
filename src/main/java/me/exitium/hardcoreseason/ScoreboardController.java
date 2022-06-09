@@ -6,35 +6,38 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.*;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Score;
+import org.bukkit.scoreboard.Scoreboard;
 
 import java.util.List;
 import java.util.UUID;
 
-public class ScoreboardController {
-    private final HardcoreSeason plugin;
-
-    public ScoreboardController(HardcoreSeason plugin) {
-        this.plugin = plugin;
-    }
+public record ScoreboardController(HardcoreSeason plugin) {
 
     public void createScoreboard(Player player) {
-        ScoreboardManager manager = Bukkit.getScoreboardManager();
-        Scoreboard scoreboard = manager.getNewScoreboard();
+        Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 
         int row = 1;
-//        Objective o = scoreboard.registerNewObjective("player", "dummy", ChatColor.BOLD + Utils.chat("&4Hardcore Players"));
         Objective o = scoreboard.registerNewObjective(
                 "player",
                 "dummy",
                 Component.text(ChatColor.BOLD + Utils.colorize("&4Hardcore Players")));
 
         List<UUID> hardcorePlayers = plugin.getDb().getReader().getAllPlayers();
-        if(hardcorePlayers == null) return;
+        if (hardcorePlayers == null) return;
+
         for (UUID uuid : hardcorePlayers) {
             o.setDisplaySlot(DisplaySlot.SIDEBAR);
 
-            HCPlayer hcPlayer = plugin.getOnlinePlayer(uuid);
+            plugin.getLogger().warning(uuid.toString());
+
+            HCPlayer hcPlayer = plugin.getDb().getReader().getPlayer(uuid);
+            if (hcPlayer == null) {
+                plugin.getLogger().warning("Player loaded from database returned NULL. Was the connection interrupted?");
+                return;
+            }
             String pStatus = switch (hcPlayer.getStatus()) {
                 case ALIVE -> Utils.colorize("&aAlive");
                 case DEAD -> Utils.colorize("&cDead");
@@ -50,9 +53,8 @@ public class ScoreboardController {
             Score playerRow = o.getScore(pString);
             playerRow.setScore(row);
             row++;
+            player.setScoreboard(scoreboard);
         }
-
-        player.setScoreboard(scoreboard);
     }
 
     public void removeScoreboard(Player player) {

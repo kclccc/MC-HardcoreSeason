@@ -11,6 +11,9 @@ public record PlayerMovedEvent(HardcoreSeason plugin) implements Listener {
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent e) {
         int taskID = plugin.getTeleportingPlayer(e.getPlayer().getUniqueId());
+
+        plugin.getLogger().warning("MOVED: " + taskID);
+        
         if (taskID != 0 && e.hasChangedPosition()) {
             Bukkit.getScheduler().cancelTask(taskID);
         }

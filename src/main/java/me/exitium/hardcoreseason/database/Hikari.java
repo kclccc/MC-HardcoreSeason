@@ -22,10 +22,12 @@ public record Hikari(HardcoreSeason plugin) {
                 String baseURL = "jdbc:mysql://";
                 String hostname = plugin.getConfig().getString("database.hostname");
                 int port = plugin.getConfig().getInt("database.port");
-                String database = plugin.getConfig().getString("database.database");
+                String database = plugin.getConfig().getString("database.db-name");
                 String username = plugin.getConfig().getString("database.username");
                 String password = plugin.getConfig().getString("database.password");
                 String finalURL = baseURL + hostname + ":" + port + "/" + database;
+
+                plugin.getLogger().warning(finalURL);
 
                 config.setDriverClassName("com.mysql.jdbc.Driver");
                 config.setJdbcUrl(finalURL);

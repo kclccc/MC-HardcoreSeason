@@ -10,6 +10,9 @@ import me.exitium.hardcoreseason.commands.ExitHardcoreCommand;
 import me.exitium.hardcoreseason.commands.GetStatbookCommand;
 import me.exitium.hardcoreseason.commands.ShowScoreboardCommand;
 import me.exitium.hardcoreseason.database.DatabaseManager;
+import me.exitium.hardcoreseason.events.HCPlayerJoinEvent;
+import me.exitium.hardcoreseason.events.HCPlayerQuitEvent;
+import me.exitium.hardcoreseason.events.PlayerMovedEvent;
 import me.exitium.hardcoreseason.player.HCPlayer;
 import me.exitium.hardcoreseason.worldhandler.HCWorldManager;
 import net.milkbowl.vault.permission.Permission;
@@ -18,12 +21,15 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.sql.Connection;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public final class HardcoreSeason extends JavaPlugin {
     private static Permission perms = null;
@@ -95,26 +101,33 @@ public final class HardcoreSeason extends JavaPlugin {
 
     private void registerCommands() {
         Map<String, PluginCommand> commandList = new HashMap<>() {{
-           put("enterCommand", getCommand("hcenter"));
-           put("exitCommand", getCommand("hcexit"));
-           put("statsCommand", getCommand("hcstats"));
-           put("scoreboardCommand", getCommand("hclist"));
+            put("enterCommand", getCommand("hcenter"));
+            put("exitCommand", getCommand("hcexit"));
+            put("statsCommand", getCommand("hcstats"));
+            put("scoreboardCommand", getCommand("hclist"));
         }};
 
-        for(Map.Entry<String, PluginCommand> entry : commandList.entrySet()){
-            if(entry.getValue() == null) {
+        for (Map.Entry<String, PluginCommand> entry : commandList.entrySet()) {
+            if (entry.getValue() == null) {
                 getLogger().warning("Failed to register command: " + entry.getKey());
                 commandList.remove(entry.getKey());
                 break;
             }
 
-            switch(entry.getKey()) {
+            switch (entry.getKey()) {
                 case "enterCommand" -> entry.getValue().setExecutor(new EnterHardcoreCommand(this));
                 case "exitCommand" -> entry.getValue().setExecutor(new ExitHardcoreCommand(this));
                 case "statsCommand" -> entry.getValue().setExecutor(new GetStatbookCommand(this));
                 case "scoreboardCommand" -> entry.getValue().setExecutor(new ShowScoreboardCommand(this));
             }
         }
+    }
+
+    private void registerEvents() {
+        final PluginManager pluginManager = getServer().getPluginManager();
+        pluginManager.registerEvents(new PlayerMovedEvent(this), this);
+        pluginManager.registerEvents(new HCPlayerJoinEvent(this), this);
+        pluginManager.registerEvents(new HCPlayerQuitEvent(this), this);
     }
 
     public HCPlayer getOnlinePlayer(UUID uuid) {

@@ -5,7 +5,6 @@ import me.exitium.hardcoreseason.statistics.StatisticsHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.UUID;
@@ -26,6 +25,7 @@ public class HCPlayer {
     private Location artifactLocation;
     private boolean enterVictoryPortal;
     private Pair<Pair<Location, Location>, Integer> netherBedLocation;
+
     public HCPlayer(UUID uuid, STATUS status, StatisticsHandler statistics, String bedLocation, long time, String returnLocation) {
         this.uuid = uuid;
         this.status = status;
@@ -38,6 +38,7 @@ public class HCPlayer {
     public HCPlayer(UUID uuid) {
         this.uuid = uuid;
         this.status = STATUS.ALIVE;
+        this.statistics = new StatisticsHandler();
     }
 
     public ItemStack[] getShulkerInventory() {
@@ -126,7 +127,7 @@ public class HCPlayer {
 
     public String getPlayerName() {
         Player player = Bukkit.getPlayer(uuid);
-        if(player == null) {
+        if (player == null) {
             return "";
         }
         return player.getName();
