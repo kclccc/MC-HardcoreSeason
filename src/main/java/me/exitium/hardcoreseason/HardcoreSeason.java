@@ -10,9 +10,8 @@ import me.exitium.hardcoreseason.commands.ExitHardcoreCommand;
 import me.exitium.hardcoreseason.commands.GetStatbookCommand;
 import me.exitium.hardcoreseason.commands.ShowScoreboardCommand;
 import me.exitium.hardcoreseason.database.DatabaseManager;
-import me.exitium.hardcoreseason.events.HCPlayerJoinEvent;
-import me.exitium.hardcoreseason.events.HCPlayerQuitEvent;
-import me.exitium.hardcoreseason.events.PlayerMovedEvent;
+import me.exitium.hardcoreseason.database.Hikari;
+import me.exitium.hardcoreseason.listeners.*;
 import me.exitium.hardcoreseason.player.HCPlayer;
 import me.exitium.hardcoreseason.worldhandler.HCWorldManager;
 import net.milkbowl.vault.permission.Permission;
@@ -66,6 +65,7 @@ public final class HardcoreSeason extends JavaPlugin {
         }
 
         registerCommands();
+        registerEvents();
 
         seasonNumber = getConfig().getInt("season-number");
         getLogger().info("Current Hardcore Season: " + seasonNumber);
@@ -81,15 +81,17 @@ public final class HardcoreSeason extends JavaPlugin {
         }
 
         db = new DatabaseManager(this);
-        sqlConnection = db.initHikari();
+        sqlConnection = new Hikari(this).setupHikari(getDb().getStorageType());
+
         if (sqlConnection == null) {
             getLogger().warning("SQL Connection is null, data cannot be saved! Please check your config options.");
         } else {
-            String storageType = getConfig().getString("storage-type");
+            String storageType = db.getStorageType();
             if (storageType == null || storageType.equals("")) {
                 getLogger().info("Could not get storage type from config file. Defaulting to SQLITE.");
                 storageType = "SQLITE";
             }
+            if (storageType.equals("MYSQL")) db.createDatabase();
             db.initTable(storageType);
         }
 
@@ -97,6 +99,7 @@ public final class HardcoreSeason extends JavaPlugin {
         setupMVInventoryGroups();
 
         onlinePlayers = new HashMap<>();
+        teleportingPlayers = new HashMap<>();
     }
 
     private void registerCommands() {
@@ -125,9 +128,19 @@ public final class HardcoreSeason extends JavaPlugin {
 
     private void registerEvents() {
         final PluginManager pluginManager = getServer().getPluginManager();
-        pluginManager.registerEvents(new PlayerMovedEvent(this), this);
-        pluginManager.registerEvents(new HCPlayerJoinEvent(this), this);
-        pluginManager.registerEvents(new HCPlayerQuitEvent(this), this);
+        pluginManager.registerEvents(new PlayerJoinListener(this), this);
+        pluginManager.registerEvents(new PlayerQuitListener(this), this);
+        pluginManager.registerEvents(new BedListener(this), this);
+        pluginManager.registerEvents(new BlockListener(this), this);
+        pluginManager.registerEvents(new ConsumeItemListener(this), this);
+        pluginManager.registerEvents(new DeathRespawnListener(this), this);
+        pluginManager.registerEvents(new EntityDamageListener(this), this);
+        pluginManager.registerEvents(new EntityDeathListener(this), this);
+        pluginManager.registerEvents(new GamemodeListener(this), this);
+        pluginManager.registerEvents(new InventoryListener(this), this);
+        pluginManager.registerEvents(new JoinQuitListener(this), this);
+        pluginManager.registerEvents(new PlayerInteractListener(this), this);
+        pluginManager.registerEvents(new PlayerMoveListener(this), this);
     }
 
     public HCPlayer getOnlinePlayer(UUID uuid) {
@@ -144,6 +157,10 @@ public final class HardcoreSeason extends JavaPlugin {
 
     public Integer getTeleportingPlayer(UUID uuid) {
         return teleportingPlayers.get(uuid);
+    }
+
+    public boolean isTeleportingPlayer(UUID uuid) {
+        return teleportingPlayers.containsKey(uuid);
     }
 
     public void addTeleportingPlayer(UUID uuid, int taskID) {

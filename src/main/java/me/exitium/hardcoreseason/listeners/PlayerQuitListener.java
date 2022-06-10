@@ -1,11 +1,11 @@
-package me.exitium.hardcoreseason.events;
+package me.exitium.hardcoreseason.listeners;
 
 import me.exitium.hardcoreseason.HardcoreSeason;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
-public record HCPlayerQuitEvent(HardcoreSeason plugin) implements Listener {
+public record PlayerQuitListener(HardcoreSeason plugin) implements Listener {
 
     @EventHandler
     public void onPlayerQuit(org.bukkit.event.player.PlayerQuitEvent event) {

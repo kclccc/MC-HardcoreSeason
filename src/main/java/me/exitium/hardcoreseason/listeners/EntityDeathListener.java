@@ -20,12 +20,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.UUID;
 
-public class EntityDeathListener implements Listener {
-    private final HardcoreSeason plugin;
-
-    public EntityDeathListener(HardcoreSeason plugin) {
-        this.plugin = plugin;
-    }
+public record EntityDeathListener(HardcoreSeason plugin) implements Listener {
 
     @EventHandler
     public void onEntityDeath(EntityDeathEvent event) {
@@ -75,7 +70,7 @@ public class EntityDeathListener implements Listener {
         ItemStack artifact = ItemStack.deserialize(plugin.getRewardsConfig().getConfigurationSection("dragon_artifact").getValues(true));
         player.getInventory().addItem(artifact);
     }
-    
+
     private void itemRoll(UUID uuid) {
         Player player = (Player) Bukkit.getOfflinePlayer(uuid);
         FileConfiguration rewards = plugin.getRewardsConfig();

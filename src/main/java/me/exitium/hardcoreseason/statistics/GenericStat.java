@@ -5,23 +5,27 @@ import org.jetbrains.annotations.NotNull;
 public class GenericStat implements Comparable<GenericStat> {
 
     String name;
-    int count;
+    int numVar;
 
     public GenericStat(String name) {
         this.name = name;
     }
 
-    public GenericStat(String name, int count) {
+    public GenericStat(String name, int numVar) {
         this.name = name;
-        this.count = count;
+        this.numVar = numVar;
     }
 
     public String getName() {
         return name;
     }
 
+    public int getNumVar() {
+        return numVar;
+    }
+
     @Override
     public int compareTo(@NotNull GenericStat o) {
-        return Integer.compare(this.count, o.count);
+        return Integer.compare(this.numVar, o.numVar);
     }
 }

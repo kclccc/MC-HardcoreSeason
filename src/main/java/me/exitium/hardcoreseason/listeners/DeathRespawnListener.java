@@ -17,12 +17,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class DeathRespawnListener implements Listener {
-    private final HardcoreSeason plugin;
-
-    public DeathRespawnListener(HardcoreSeason plugin) {
-        this.plugin = plugin;
-    }
+public record DeathRespawnListener(HardcoreSeason plugin) implements Listener {
 
     @EventHandler
     public void onDeath(PlayerDeathEvent event) {

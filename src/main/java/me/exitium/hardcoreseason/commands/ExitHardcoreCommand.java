@@ -5,7 +5,10 @@ import me.exitium.hardcoreseason.Utils;
 import me.exitium.hardcoreseason.player.HCPlayer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -19,9 +22,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public record ExitHardcoreCommand(HardcoreSeason plugin) implements CommandExecutor {
 
@@ -70,8 +74,10 @@ public record ExitHardcoreCommand(HardcoreSeason plugin) implements CommandExecu
                     plugin.remOnlinePlayer(uuid);
                 }
             }.runTaskLater(plugin, 20L * plugin.getTeleportCooldown());
+
+            plugin.addTeleportingPlayer(uuid, task.getTaskId());
         }
-        return false;
+        return true;
     }
 
     private void validateArtifact(UUID uuid) {

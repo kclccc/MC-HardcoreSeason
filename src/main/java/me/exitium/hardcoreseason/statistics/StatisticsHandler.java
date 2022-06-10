@@ -51,8 +51,8 @@ public class StatisticsHandler {
             case MOB_KILL -> mobKillList.merge(stat.getName(), 1, Integer::sum);
             case DRINK_POTION -> drinkPotionList.merge(stat.getName(), 1, Integer::sum);
             case CONSUME_FOOD -> consumeFoodList.merge(stat.getName(), 1, Integer::sum);
-            case DAMAGE_TAKEN -> damageTakenList.merge(stat.getName(), 1, Integer::sum);
-            case DAMAGE_DEALT -> damageDealtList.merge(stat.getName(), 1, Integer::sum);
+            case DAMAGE_TAKEN -> damageTakenList.merge(stat.getName(), stat.getNumVar(), Integer::sum);
+            case DAMAGE_DEALT -> damageDealtList.merge(stat.getName(), stat.getNumVar(), Integer::sum);
             case ITEM_CRAFTED -> itemCraftedList.merge(stat.getName(), 1, Integer::sum);
             case EYE_USED -> eyesUsedList.merge(stat.getName(), 1, Integer::sum);
             case TRADES_MADE -> tradesList.merge(stat.getName(), 1, Integer::sum);

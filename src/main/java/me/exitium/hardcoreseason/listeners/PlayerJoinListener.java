@@ -1,4 +1,4 @@
-package me.exitium.hardcoreseason.events;
+package me.exitium.hardcoreseason.listeners;
 
 import me.exitium.hardcoreseason.HardcoreSeason;
 import me.exitium.hardcoreseason.database.DatabaseManager;
@@ -8,7 +8,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
-public record HCPlayerJoinEvent(HardcoreSeason plugin) implements Listener {
+public record PlayerJoinListener(HardcoreSeason plugin) implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {

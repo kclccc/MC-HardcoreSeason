@@ -7,12 +7,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 
-public class GamemodeListener implements Listener {
-    private final HardcoreSeason plugin;
-
-    public GamemodeListener(HardcoreSeason plugin) {
-        this.plugin = plugin;
-    }
+public record GamemodeListener(HardcoreSeason plugin) implements Listener {
 
     @EventHandler
     public void onGamemodeChange(PlayerGameModeChangeEvent event) {

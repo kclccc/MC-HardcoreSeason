@@ -24,12 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class JoinQuitListener implements Listener {
-    private final HardcoreSeason plugin;
-
-    public JoinQuitListener(HardcoreSeason plugin) {
-        this.plugin = plugin;
-    }
+public record JoinQuitListener(HardcoreSeason plugin) implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {

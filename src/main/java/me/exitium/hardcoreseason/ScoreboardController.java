@@ -2,7 +2,7 @@ package me.exitium.hardcoreseason;
 
 import me.exitium.hardcoreseason.player.HCPlayer;
 import net.kyori.adventure.text.Component;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;

@@ -4,7 +4,7 @@ import me.exitium.hardcoreseason.HardcoreSeason;
 import me.exitium.hardcoreseason.player.HCPlayer;
 import me.exitium.hardcoreseason.statistics.GenericStat;
 import me.exitium.hardcoreseason.statistics.StatisticsHandler;
-import org.apache.commons.lang.WordUtils;
+import org.apache.commons.text.WordUtils;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

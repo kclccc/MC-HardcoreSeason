@@ -3,23 +3,26 @@ package me.exitium.hardcoreseason.database;
 import com.zaxxer.hikari.HikariDataSource;
 import me.exitium.hardcoreseason.HardcoreSeason;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class DatabaseManager {
     private final HardcoreSeason plugin;
 
-
     DatabaseWriter writer;
     DatabaseReader reader;
     HikariDataSource hikari;
+    String databaseName;
+    String storageType;
 
     public DatabaseManager(HardcoreSeason plugin) {
         this.plugin = plugin;
 
+        databaseName = plugin.getConfig().getString("database.db-name");
         reader = new DatabaseReader(plugin);
         writer = new DatabaseWriter(plugin);
+
+        setStorageType(plugin.getConfig().getString("storage-type"));
     }
 
     public DatabaseWriter getWriter() {
@@ -30,25 +33,23 @@ public class DatabaseManager {
         return reader;
     }
 
-    public Connection initHikari() {
-        String storageType = plugin.getConfig().getString("storage-type");
-        hikari = new Hikari(plugin).setupHikari(storageType);
-        try {
-            Connection connection = hikari.getConnection();
-            plugin.getLogger().info("Attempting to connect to SQL...");
-            if (!connection.isValid(10)) {
-                plugin.getLogger().warning("SQL could not connect, falling back to SQLITE.");
-                plugin.getConfig().set("storage-type", "SQLITE");
-                plugin.saveConfig();
-                hikari = new Hikari(plugin).setupHikari("SQLITE");
-            } else {
-                plugin.getLogger().info("SQL Connection successful!");
-                return connection;
-            }
+    public String getStorageType() {
+        return storageType;
+    }
+
+    public void setStorageType(String storageType) {
+        this.storageType = storageType;
+    }
+
+    public void createDatabase() {
+        try (PreparedStatement ps = plugin.getSqlConnection().prepareStatement(
+                "CREATE DATABASE IF NOT EXISTS " + databaseName
+        )) {
+            ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            plugin.getLogger().severe(e.getMessage());
+//            e.printStackTrace();
         }
-        return null;
     }
 
     public void initTable(String storageType) {

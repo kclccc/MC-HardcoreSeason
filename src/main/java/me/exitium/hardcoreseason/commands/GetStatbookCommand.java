@@ -30,7 +30,7 @@ public class GetStatbookCommand implements CommandExecutor {
             sender.sendMessage("Command cannot be run from console.");
             return false;
         } else {
-            if(!plugin.getHcWorldManager().isHardcoreWorld(player.getWorld().getName())) return false;
+            if (!plugin.getHcWorldManager().isHardcoreWorld(player.getWorld().getName())) return false;
             HCPlayer hcPlayer = plugin.getOnlinePlayer(player.getUniqueId());
 
             ItemStack bookItem = CheckForStatBook(player.getInventory());
@@ -45,17 +45,17 @@ public class GetStatbookCommand implements CommandExecutor {
                 player.sendMessage("A stat book has been added to your inventory.");
                 player.getInventory().addItem(writtenBook);
             }
-            }
+        }
         return true;
     }
 
     private ItemStack CheckForStatBook(Inventory inventory) {
         ItemStack item = null;
         for (ItemStack i : inventory) {
-            if(i==null) break;
+            if (i == null) break;
             if (i.getType() == Material.WRITTEN_BOOK) {
                 BookMeta bookMeta = (BookMeta) i.getItemMeta();
-                if(bookMeta == null) break;
+                if (bookMeta == null) break;
                 if (Objects.equals(bookMeta.getTitle(), "HC Stats")) {
                     item = i;
                 }
@@ -90,7 +90,7 @@ public class GetStatbookCommand implements CommandExecutor {
 //                        new StringBuilder("=== Trades Made ===\n"))),
 //                Component.text(getPageString(sortByValue(hcPlayer.getStatistics().getDamageDealtList()),
 //                        new StringBuilder("=== Eyes Used ===\n")))
-                );
+        );
         return bookMeta;
     }
 
@@ -105,8 +105,8 @@ public class GetStatbookCommand implements CommandExecutor {
         return result;
     }
 
-    private String getPageString(Map<String, Integer> inputMap, StringBuilder fmtString){
-        if(inputMap.isEmpty()) return "";
+    private String getPageString(Map<String, Integer> inputMap, StringBuilder fmtString) {
+        if (inputMap.isEmpty()) return fmtString.toString();
         inputMap.entrySet().forEach(entry -> fmtString.append(DefaultFontInfo.alignString(entry)));
         return fmtString.toString();
     }

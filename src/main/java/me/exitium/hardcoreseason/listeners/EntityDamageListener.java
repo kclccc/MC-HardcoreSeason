@@ -6,6 +6,7 @@ import me.exitium.hardcoreseason.HardcoreSeason;
 import me.exitium.hardcoreseason.player.HCPlayer;
 import me.exitium.hardcoreseason.statistics.GenericStat;
 import me.exitium.hardcoreseason.statistics.StatisticsHandler;
+import org.apache.commons.text.WordUtils;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
@@ -23,6 +24,44 @@ import java.util.UUID;
 
 public class EntityDamageListener implements Listener {
     private final HardcoreSeason plugin;
+
+    private final ImmutableSet<Material> WEAPON_TYPES = Sets.immutableEnumSet(
+            Material.WOODEN_SWORD,
+            Material.WOODEN_AXE,
+            Material.WOODEN_HOE,
+            Material.WOODEN_PICKAXE,
+            Material.WOODEN_SHOVEL,
+            Material.STONE_SWORD,
+            Material.STONE_AXE,
+            Material.STONE_HOE,
+            Material.STONE_PICKAXE,
+            Material.STONE_SHOVEL,
+            Material.IRON_SWORD,
+            Material.IRON_AXE,
+            Material.IRON_HOE,
+            Material.IRON_PICKAXE,
+            Material.IRON_SHOVEL,
+            Material.GOLDEN_SWORD,
+            Material.GOLDEN_AXE,
+            Material.GOLDEN_HOE,
+            Material.GOLDEN_SHOVEL,
+            Material.GOLDEN_PICKAXE,
+            Material.DIAMOND_SWORD,
+            Material.DIAMOND_AXE,
+            Material.DIAMOND_HOE,
+            Material.DIAMOND_SHOVEL,
+            Material.DIAMOND_PICKAXE,
+            Material.NETHERITE_SWORD,
+            Material.NETHERITE_AXE,
+            Material.NETHERITE_HOE,
+            Material.NETHERITE_SHOVEL,
+            Material.NETHERITE_PICKAXE,
+            Material.BOW,
+            Material.CROSSBOW,
+            Material.SNOWBALL,
+            Material.SPLASH_POTION,
+            Material.BLACK_BED
+    );
 
     public EntityDamageListener(HardcoreSeason plugin) {
         this.plugin = plugin;
@@ -56,8 +95,11 @@ public class EntityDamageListener implements Listener {
         // Player damages non-player
         if (damageSender instanceof Player && !(damageReceiver instanceof Player)) {
             Material weapon = ((Player) damageSender).getInventory().getItemInMainHand().getType();
+            String weaponName = weapon.name().replace('_', ' ');
+
+            if (!WEAPON_TYPES.contains(weapon)) weaponName = "Fist";
             plugin.getOnlinePlayer(damageSender.getUniqueId()).getStatistics().addStat(
-                    new GenericStat(weapon.name(), (int) damageAmount),
+                    new GenericStat(WordUtils.capitalizeFully(weaponName), (int) damageAmount),
                     StatisticsHandler.STATTYPE.DAMAGE_DEALT);
         }
 
@@ -65,7 +107,7 @@ public class EntityDamageListener implements Listener {
         if (damageReceiver instanceof Player && !(damageSender instanceof Player)) {
             HCPlayer hcPlayer = plugin.getOnlinePlayer(damageReceiver.getUniqueId());
 
-            if (damageSender instanceof Projectile) {
+            if (damageSender instanceof Projectile && ((Projectile) damageSender).getShooter() != null) {
                 hcPlayer.getStatistics().addStat(new GenericStat(
                                 ((Projectile) damageSender).getShooter().toString().replace("Craft", ""), (int) damageAmount),
                         StatisticsHandler.STATTYPE.DAMAGE_TAKEN);
@@ -79,19 +121,25 @@ public class EntityDamageListener implements Listener {
         // Player shoots a projectile at a non-player
         if (isPlayerShooter && !(damageReceiver instanceof Player)) {
             Material weapon = ((Player) ((Projectile) damageSender).getShooter()).getInventory().getItemInMainHand().getType();
+            String weaponName = weapon.name().replace('_', ' ');
+
+            if (!WEAPON_TYPES.contains(weapon)) weaponName = "Fist";
             plugin.getOnlinePlayer(((Player) ((Projectile) damageSender).getShooter()).getUniqueId()).getStatistics().addStat(
-                    new GenericStat(weapon.name(), (int) damageAmount),
+                    new GenericStat(WordUtils.capitalizeFully(weaponName), (int) damageAmount),
                     StatisticsHandler.STATTYPE.DAMAGE_DEALT);
         }
 
         // Player damages another player
         if (damageSender instanceof Player && damageReceiver instanceof Player) {
             Material weapon = ((Player) damageSender).getInventory().getItemInMainHand().getType();
+            String weaponName = weapon.name().replace('_', ' ');
+
+            if (!WEAPON_TYPES.contains(weapon)) weaponName = "Fist";
             HCPlayer attackingPlayer = plugin.getOnlinePlayer(damageSender.getUniqueId());
             HCPlayer receivingPlayer = plugin.getOnlinePlayer(damageReceiver.getUniqueId());
 
             attackingPlayer.getStatistics().addStat(new GenericStat(
-                            weapon.name(), (int) damageAmount),
+                            WordUtils.capitalizeFully(weaponName), (int) damageAmount),
                     StatisticsHandler.STATTYPE.DAMAGE_DEALT);
 
             receivingPlayer.getStatistics().addStat(new GenericStat(
