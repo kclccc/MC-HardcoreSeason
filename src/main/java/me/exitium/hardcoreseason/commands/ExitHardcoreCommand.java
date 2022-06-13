@@ -22,6 +22,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -103,6 +104,11 @@ public record ExitHardcoreCommand(HardcoreSeason plugin) implements CommandExecu
 
     private void validateArtifact(UUID uuid) {
         Player player = Bukkit.getPlayer(uuid);
+        if(player == null) {
+            plugin.getLogger().warning("PLAYER was NULL while trying to validate artifact!");
+            // TODO: Backup items inside the artifact before returning
+            return;
+        }
         Inventory pInv = player.getInventory();
         ItemStack[] pInvContents = player.getInventory().getContents();
         NamespacedKey key = new NamespacedKey(plugin, "hc-box");
@@ -111,8 +117,8 @@ public record ExitHardcoreCommand(HardcoreSeason plugin) implements CommandExecu
         Predicate<ItemStack> itemStackPredicate = itemStack ->
                 itemStack != null
                         && itemStack.hasItemMeta()
-                        && itemStack.getItemMeta().getPersistentDataContainer().has(key, PersistentDataType.INTEGER)
-                        && itemStack.getItemMeta().getPersistentDataContainer().get(key, PersistentDataType.INTEGER) == 69;
+                        && itemStack.getItemMeta().getPersistentDataContainer().has(key, PersistentDataType.INTEGER);
+//                        && itemStack.getItemMeta().getPersistentDataContainer().get(key, PersistentDataType.INTEGER) == 69;
 
         List<ItemStack> shulkerList = Arrays.stream(pInvContents)
                 .filter(itemStackPredicate)
@@ -147,10 +153,13 @@ public record ExitHardcoreCommand(HardcoreSeason plugin) implements CommandExecu
         shulker.getInventory().setContents(shulkerInventory);
 
         bsm.setBlockState(shulker);
-        bsm.displayName().append(Component.text("Soggy cardboard box")).color(NamedTextColor.LIGHT_PURPLE);
-//		bsm.setDisplayName(ChatColor.LIGHT_PURPLE + "Soggy Cardboard Box");
-        bsm.lore().add(Component.text("... It smells bad"));
-//		bsm.setLore(new ArrayList<>(Collections.singletonList("... It smells bad")));
+        bsm.displayName(Component.text("Soggy cardboard box", NamedTextColor.LIGHT_PURPLE));
+        bsm.lore(new ArrayList<>() {
+            {
+                add(Component.text("... It smells bad"));
+            }
+        });
+
         bsm.getPersistentDataContainer().set(new NamespacedKey(plugin, "hc-box"), PersistentDataType.INTEGER, 69);
         is.setItemMeta(bsm);
         shulker.update();

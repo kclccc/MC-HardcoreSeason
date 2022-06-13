@@ -78,9 +78,9 @@ public class HCWorldManager {
         }
 
         String worldName = hcWorld.getName();
-        if (Bukkit.getWorld(worldName) != null) {
-            mvCore.deleteWorld(worldName);
-            plugin.getLogger().info("Deleting world before creation: " + worldName);
+        World oldWorld = Bukkit.getWorld(worldName);
+        if (oldWorld != null) {
+            deleteWorld(oldWorld);
         }
 
         if (mvCore.getMVWorldManager().addWorld(
@@ -106,6 +106,21 @@ public class HCWorldManager {
         } else {
             plugin.getLogger().info("Failed to create world: " + worldName);
         }
+    }
+
+    private void deleteWorld(World world) {
+        if(!plugin.getHcWorldManager().isHardcoreWorld(world.getName())){
+            plugin.getLogger().severe("Attempting to delete a world that's not HARDCORE : " +
+                    world.getName() + " Action: CANCELLED");
+            return;
+        }
+
+        if(plugin.getMultiverseCore().deleteWorld(world.getName())) {
+            plugin.getLogger().info("Successfully deleted HARDCORE world: " + world.getName());
+            return;
+        }
+
+        plugin.getLogger().warning("Could not delete HARDCORE world: " + world.getName());
     }
 
     private HCWorld fromConfig(World.Environment environment) {

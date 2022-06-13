@@ -71,6 +71,8 @@ public final class HardcoreSeason extends JavaPlugin {
         hcWorldManager = new HCWorldManager(this);
         hcWorldManager.loadWorldsFromConfig();
 
+        createRewardsConfig();
+
         if (seasonNumber == 0) {
             getLogger().info("No data found, running initialization.");
             hcWorldManager.createAll();
@@ -108,6 +110,7 @@ public final class HardcoreSeason extends JavaPlugin {
             put("statsCommand", getCommand("hcstats"));
             put("scoreboardCommand", getCommand("hclist"));
             put("spectateCommand", getCommand("hcspectate"));
+            put("resetPlayerCommand", getCommand("hcresetplayer"));
         }};
 
         for (Map.Entry<String, PluginCommand> entry : commandList.entrySet()) {
@@ -124,6 +127,7 @@ public final class HardcoreSeason extends JavaPlugin {
                 case "statsCommand" -> entry.getValue().setExecutor(new GetStatbookCommand(this));
                 case "scoreboardCommand" -> entry.getValue().setExecutor(new ShowScoreboardCommand(this));
                 case "spectateCommand" -> entry.getValue().setExecutor(new SpectateCommand(this));
+                case "resetPlayerCommand" -> entry.getValue().setExecutor(new ResetPlayerCommand(this));
             }
         }
     }
@@ -205,8 +209,8 @@ public final class HardcoreSeason extends JavaPlugin {
     private void createRewardsConfig() {
         File rewardsConfigFile = new File(getDataFolder(), "rewards.yml");
         if (!rewardsConfigFile.exists()) {
-            rewardsConfigFile.getParentFile().mkdirs();
-            saveResource("rewards.yml", false);
+            if(rewardsConfigFile.getParentFile().mkdirs())
+                saveResource("rewards.yml", false);
         }
 
         rewardsConfig = new YamlConfiguration();

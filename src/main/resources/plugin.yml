@@ -29,3 +29,18 @@ commands:
     description: Teleports a spectator to an alive player.
     aliases: [ hcspec ]
     usage: /<command> <player-name>
+    permission: hardcoreseason.hasdied
+  hcnewseason:
+    description: Create a new season of Hardcore, removing old worlds if they exist.
+    usage: /<command>
+    permission: op
+  hcresetplayer:
+    description: Reset an individual player for the current season.
+    aliases: [/hcresetpl]
+    usage: /<command>
+    permission: op
+
+permissions:
+  hardcoreseason.hasdied:
+    description: Determines if a player has died and can re-enter the world.
+    default: false

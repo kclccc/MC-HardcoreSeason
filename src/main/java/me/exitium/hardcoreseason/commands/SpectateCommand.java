@@ -20,6 +20,11 @@ public record SpectateCommand(HardcoreSeason plugin) implements CommandExecutor 
             sender.sendMessage("Command cannot be run from console!");
             return true;
         } else {
+            if(!plugin().hasPermission(player, "hardcoreseason.hasdied")) {
+                player.sendMessage(Component.text("You may only spectate once you have died!", NamedTextColor.RED));
+                return true;
+            }
+
             if (args.length > 0) {
                 Player specPlayer = Bukkit.getPlayer(args[0]);
                 if (specPlayer == null) {

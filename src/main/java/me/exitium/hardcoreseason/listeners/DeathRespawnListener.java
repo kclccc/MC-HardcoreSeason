@@ -55,11 +55,6 @@ public record DeathRespawnListener(HardcoreSeason plugin) implements Listener {
     }
 
     @EventHandler
-    public void onTeleport(PlayerTeleportEvent event) {
-//        plugin.getLogger().info("TeleportEvent: " + event.getCause());
-    }
-
-    @EventHandler
     public void onRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();
 
