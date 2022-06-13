@@ -5,10 +5,7 @@ import com.onarandombox.multiverseinventories.MultiverseInventories;
 import com.onarandombox.multiverseinventories.WorldGroup;
 import com.onarandombox.multiverseinventories.profile.WorldGroupManager;
 import com.onarandombox.multiverseinventories.share.Sharables;
-import me.exitium.hardcoreseason.commands.EnterHardcoreCommand;
-import me.exitium.hardcoreseason.commands.ExitHardcoreCommand;
-import me.exitium.hardcoreseason.commands.GetStatbookCommand;
-import me.exitium.hardcoreseason.commands.ShowScoreboardCommand;
+import me.exitium.hardcoreseason.commands.*;
 import me.exitium.hardcoreseason.database.DatabaseManager;
 import me.exitium.hardcoreseason.database.Hikari;
 import me.exitium.hardcoreseason.listeners.*;
@@ -27,6 +24,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.sql.Connection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -104,10 +102,12 @@ public final class HardcoreSeason extends JavaPlugin {
 
     private void registerCommands() {
         Map<String, PluginCommand> commandList = new HashMap<>() {{
+            put("helpCommand", getCommand("hchelp"));
             put("enterCommand", getCommand("hcenter"));
             put("exitCommand", getCommand("hcexit"));
             put("statsCommand", getCommand("hcstats"));
             put("scoreboardCommand", getCommand("hclist"));
+            put("spectateCommand", getCommand("hcspectate"));
         }};
 
         for (Map.Entry<String, PluginCommand> entry : commandList.entrySet()) {
@@ -118,10 +118,12 @@ public final class HardcoreSeason extends JavaPlugin {
             }
 
             switch (entry.getKey()) {
+                case "helpCommand" -> entry.getValue().setExecutor(new HelpCommand(this));
                 case "enterCommand" -> entry.getValue().setExecutor(new EnterHardcoreCommand(this));
                 case "exitCommand" -> entry.getValue().setExecutor(new ExitHardcoreCommand(this));
                 case "statsCommand" -> entry.getValue().setExecutor(new GetStatbookCommand(this));
                 case "scoreboardCommand" -> entry.getValue().setExecutor(new ShowScoreboardCommand(this));
+                case "spectateCommand" -> entry.getValue().setExecutor(new SpectateCommand(this));
             }
         }
     }
@@ -138,17 +140,25 @@ public final class HardcoreSeason extends JavaPlugin {
         pluginManager.registerEvents(new EntityDeathListener(this), this);
         pluginManager.registerEvents(new GamemodeListener(this), this);
         pluginManager.registerEvents(new InventoryListener(this), this);
-        pluginManager.registerEvents(new JoinQuitListener(this), this);
+        pluginManager.registerEvents(new PlayerTeleportListener(this), this);
         pluginManager.registerEvents(new PlayerInteractListener(this), this);
         pluginManager.registerEvents(new PlayerMoveListener(this), this);
+        pluginManager.registerEvents(new CraftItemListener(this), this);
+        pluginManager.registerEvents(new BarterListener(this), this);
+        pluginManager.registerEvents(new PlayerDropItemListener(this), this);
+        pluginManager.registerEvents(new PlayerPickupItemListener(this), this);
+    }
+
+    public List<UUID> getAllOnlinePlayers() {
+        return onlinePlayers.keySet().stream().toList();
     }
 
     public HCPlayer getOnlinePlayer(UUID uuid) {
         return onlinePlayers.get(uuid);
     }
 
-    public void addOnlinePlayer(HCPlayer player) {
-        onlinePlayers.put(player.getUUID(), player);
+    public void addOnlinePlayer(HCPlayer hcPlayer) {
+        onlinePlayers.put(hcPlayer.getUUID(), hcPlayer);
     }
 
     public void remOnlinePlayer(UUID uuid) {
@@ -168,6 +178,7 @@ public final class HardcoreSeason extends JavaPlugin {
     }
 
     public void remTeleportingPlayer(UUID uuid) {
+        getOnlinePlayer(uuid).setTeleportTaskID(0);
         teleportingPlayers.remove(uuid);
     }
 
@@ -267,6 +278,5 @@ public final class HardcoreSeason extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
     }
 }

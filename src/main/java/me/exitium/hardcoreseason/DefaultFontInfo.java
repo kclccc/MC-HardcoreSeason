@@ -100,6 +100,7 @@ public enum DefaultFontInfo {
     SPACE(' ', 3),
     DEFAULT('a', 4);
 
+
     private char character;
     private int length;
 
@@ -128,34 +129,34 @@ public enum DefaultFontInfo {
         return DefaultFontInfo.DEFAULT;
     }
 
-    private final static int MAX_PIXELS = 110;
+    private final static int MAX_PIXELS = 108;
 
-    public static String alignString(Map.Entry<String, Integer> entry){
+    public static String alignString(Map.Entry<String, Integer> entry) {
         boolean previousCode = false;
         boolean isBold = false;
         int keySize = 0;
         int valueSize = 0;
 
-        for(char c : entry.getKey().toCharArray()){
-            if(c == '§'){
+        for (char c : entry.getKey().toCharArray()) {
+            if (c == '§') {
                 previousCode = true;
-            }else if(previousCode){
+            } else if (previousCode) {
                 previousCode = false;
                 isBold = c == 'l' || c == 'L';
-            }else{
+            } else {
                 DefaultFontInfo dFI = DefaultFontInfo.getDefaultFontInfo(c);
                 keySize += isBold ? dFI.getBoldLength() : dFI.getLength();
                 keySize++;
             }
         }
 
-        for(char c : entry.getValue().toString().toCharArray()){
-            if(c == '§'){
+        for (char c : entry.getValue().toString().toCharArray()) {
+            if (c == '§') {
                 previousCode = true;
-            }else if(previousCode){
+            } else if (previousCode) {
                 previousCode = false;
                 isBold = c == 'l' || c == 'L';
-            }else{
+            } else {
                 DefaultFontInfo dFI = DefaultFontInfo.getDefaultFontInfo(c);
                 valueSize += isBold ? dFI.getBoldLength() : dFI.getLength();
                 valueSize++;
@@ -169,10 +170,11 @@ public enum DefaultFontInfo {
 
         StringBuilder sb = new StringBuilder();
         sb.append(entry.getKey());
-        while(compensated < toCompensate){
+        while (compensated < toCompensate) {
             sb.append(" ");
             compensated += spaceLength;
         }
+
         return sb.append(entry.getValue()).append("\n").toString();
     }
 }

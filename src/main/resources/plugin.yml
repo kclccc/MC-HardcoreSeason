@@ -8,21 +8,24 @@ depend: [ Vault, Multiverse-Core, Multiverse-Inventories ]
 commands:
   hchelp:
     description: Gives information about the hardcore season.
-    aliases: /hc
+    aliases: [ hc ]
     usage: /<command>
   hcenter:
     description: Enter the hardcore world.
-    aliases: /hce
+    aliases: [ hcstart ]
     usage: /<command>
   hcexit:
     description: Leave the hardcore world.
-    aliases: /hcl, /hcleave
+    aliases: [ hcleave ]
     usage: /<command>
   hclist:
     description: Show all hardcore players and their status.
-    aliases: /hcwho
+    aliases: [ hcwho ]
     usage: /<command>
   hcstats:
     description: Get a book containing hardcore statistics.
-    aliases: /hcs
     usage: /<command>
+  hcspectate:
+    description: Teleports a spectator to an alive player.
+    aliases: [ hcspec ]
+    usage: /<command> <player-name>

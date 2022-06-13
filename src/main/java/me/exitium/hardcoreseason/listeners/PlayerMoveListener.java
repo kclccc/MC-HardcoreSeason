@@ -20,9 +20,9 @@ public record PlayerMoveListener(HardcoreSeason plugin) implements Listener {
         int taskID = plugin.getTeleportingPlayer(player.getUniqueId());
 
         if (taskID != 0 && e.hasChangedBlock()) {
+            Bukkit.getScheduler().cancelTask(taskID);
             player.sendMessage(Component.text("Teleportation cancelled due to movement!", NamedTextColor.RED));
             plugin.remTeleportingPlayer(player.getUniqueId());
-            Bukkit.getScheduler().cancelTask(taskID);
         }
     }
 //    @EventHandler

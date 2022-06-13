@@ -47,8 +47,7 @@ public class DatabaseManager {
         )) {
             ps.executeUpdate();
         } catch (SQLException e) {
-            plugin.getLogger().severe(e.getMessage());
-//            e.printStackTrace();
+            e.printStackTrace();
         }
     }
 

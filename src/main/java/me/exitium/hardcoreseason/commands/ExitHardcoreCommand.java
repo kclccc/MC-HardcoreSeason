@@ -37,20 +37,40 @@ public record ExitHardcoreCommand(HardcoreSeason plugin) implements CommandExecu
 
             if (!plugin.getHcWorldManager().isHardcoreWorld(player.getWorld().getName())) {
                 player.sendMessage(Utils.colorize("&7You must be in a hardcore world to use this command."));
-                return false;
+                return true;
             }
             player.sendMessage(Utils.colorize("&7Teleporting... Do not move for 5 seconds!"));
             UUID uuid = player.getUniqueId();
+            HCPlayer hcPlayer = plugin.getOnlinePlayer(uuid);
 
+            if (hcPlayer == null) {
+                hcPlayer = plugin.getDb().getReader().getPlayer(uuid);
+                if (hcPlayer == null) {
+                    plugin.getLogger().severe("NULL player from database but was in HARDCORE!");
+                    player.sendMessage("NULL player from database, returning to softcore world!");
+                    player.teleport(plugin.getHcWorldManager().getSoftcoreWorld().getSpawnLocation());
+                    return true;
+                }
+            }
+
+            if (hcPlayer.getStatus().equals(HCPlayer.STATUS.DEAD)) {
+                player.teleport(Utils.processLocationString(
+                        plugin.getHcWorldManager().getSoftcoreWorld(), hcPlayer.getReturnLocation()));
+                player.sendMessage(Component.text("Thanks for playing, better luck next time!", NamedTextColor.GRAY));
+                return true;
+            }
+
+            HCPlayer finalHcPlayer = hcPlayer;
             BukkitTask task = new BukkitRunnable() {
                 @Override
                 public void run() {
                     // Check if player has a reward Shulker Box from killing the dragon
                     // and send it with it's contents to the Softcore World.
                     validateArtifact(uuid);
-                    // TODO: update player time
-                    HCPlayer hcPlayer = plugin.getOnlinePlayer(uuid);
-                    String returnLocation = hcPlayer.getReturnLocation();
+
+                    finalHcPlayer.updateTime();
+
+                    String returnLocation = finalHcPlayer.getReturnLocation();
 
                     if (returnLocation != null) {
                         Location tempLocation = Utils.processLocationString(
@@ -60,17 +80,18 @@ public record ExitHardcoreCommand(HardcoreSeason plugin) implements CommandExecu
                         player.teleport(plugin.getHcWorldManager().getSoftcoreWorld().getSpawnLocation());
                     }
 
-                    if (hcPlayer.getShulkerInventory() != null) giveCardboardBox(uuid);
+                    if (finalHcPlayer.getShulkerInventory() != null) giveCardboardBox(uuid);
 
                     new BukkitRunnable() {
                         @Override
                         public void run() {
-                            plugin.getDb().getWriter().updatePlayer(hcPlayer);
+                            plugin.getDb().getWriter().updatePlayer(finalHcPlayer);
                         }
                     }.runTaskAsynchronously(plugin);
 
                     // Sync player data and remove them from any lists
                     player.sendMessage(Utils.colorize("&7You have left the &4Hardcore &7world"));
+                    plugin.remTeleportingPlayer(uuid);
                     plugin.remOnlinePlayer(uuid);
                 }
             }.runTaskLater(plugin, 20L * plugin.getTeleportCooldown());

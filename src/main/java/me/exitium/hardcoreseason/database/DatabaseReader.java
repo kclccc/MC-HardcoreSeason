@@ -23,10 +23,8 @@ public record DatabaseReader(HardcoreSeason plugin) {
             ResultSet result = ps.executeQuery();
             return result.next();
         } catch (SQLException e) {
-            // TODO: actual error handling
             e.printStackTrace();
         }
-        plugin.getLogger().info("Why did this trigger?");
         return true;
     }
 
@@ -57,16 +55,15 @@ public record DatabaseReader(HardcoreSeason plugin) {
                 );
             }
         } catch (SQLException e) {
-            // TODO: Actual error handling
             e.printStackTrace();
         }
         return null;
     }
 
-    public List<UUID> getAllPlayers() {
+    public List<UUID> getAllPlayers(int seasonNumber) {
         try (PreparedStatement ps = plugin.getSqlConnection().prepareStatement(
                 "SELECT uuid FROM hardcore_season WHERE season_number=?")) {
-            ps.setInt(1, plugin.getSeasonNumber());
+            ps.setInt(1, seasonNumber);
 
             ResultSet results = ps.executeQuery();
 

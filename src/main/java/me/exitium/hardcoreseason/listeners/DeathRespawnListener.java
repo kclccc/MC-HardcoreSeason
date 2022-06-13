@@ -15,7 +15,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Arrays;
-import java.util.HashMap;
 
 public record DeathRespawnListener(HardcoreSeason plugin) implements Listener {
 
@@ -28,13 +27,15 @@ public record DeathRespawnListener(HardcoreSeason plugin) implements Listener {
             Player player = event.getEntity();
             ItemStack[] inventory = player.getInventory().getContents();
 
-            HashMap<String, Integer> playerInventory = new HashMap<>();
-            for (ItemStack item : inventory) {
-                if (item != null) playerInventory.put(item.getType().toString(), item.getAmount());
-            }
+//            HashMap<String, Integer> playerInventory = new HashMap<>();
+//            for (ItemStack item : inventory) {
+//                if (item != null) playerInventory.put(item.getType().toString(), item.getAmount());
+//            }
+
             plugin.setPermission(player, "hardcoreseason.hasdied");
 
             HCPlayer hcPlayer = plugin.getOnlinePlayer(player.getUniqueId());
+            hcPlayer.updateTime();
             hcPlayer.killPlayer(String.valueOf(event.deathMessage()), player.getLocation());
 
             new BukkitRunnable() {
@@ -44,19 +45,18 @@ public record DeathRespawnListener(HardcoreSeason plugin) implements Listener {
                 }
             }.runTaskAsynchronously(plugin);
 
-//            new BukkitRunnable() {
-//                @Override
-//                public void run() {
-//                    player.spigot().respawn();
-//                }
-//            }.runTaskLater(plugin, 1);
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    player.spigot().respawn();
+                }
+            }.runTaskLater(plugin, 1);
         }
     }
 
     @EventHandler
     public void onTeleport(PlayerTeleportEvent event) {
-//        System.out.println("TELEPORT EVENT: " + event.getCause());
-        plugin.getLogger().info("TeleportEvent: " + event.getCause());
+//        plugin.getLogger().info("TeleportEvent: " + event.getCause());
     }
 
     @EventHandler

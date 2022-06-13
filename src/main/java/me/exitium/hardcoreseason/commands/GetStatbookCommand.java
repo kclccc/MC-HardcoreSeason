@@ -4,7 +4,9 @@ import me.exitium.hardcoreseason.DefaultFontInfo;
 import me.exitium.hardcoreseason.HardcoreSeason;
 import me.exitium.hardcoreseason.Utils;
 import me.exitium.hardcoreseason.player.HCPlayer;
+import me.exitium.hardcoreseason.statistics.StatisticsHandler;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -17,12 +19,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class GetStatbookCommand implements CommandExecutor {
-    private final HardcoreSeason plugin;
-
-    public GetStatbookCommand(HardcoreSeason plugin) {
-        this.plugin = plugin;
-    }
+public record GetStatbookCommand(HardcoreSeason plugin) implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
@@ -32,6 +29,8 @@ public class GetStatbookCommand implements CommandExecutor {
         } else {
             if (!plugin.getHcWorldManager().isHardcoreWorld(player.getWorld().getName())) return false;
             HCPlayer hcPlayer = plugin.getOnlinePlayer(player.getUniqueId());
+
+            hcPlayer.updateTime();
 
             ItemStack bookItem = CheckForStatBook(player.getInventory());
             ItemStack writtenBook = new ItemStack(Material.WRITTEN_BOOK);
@@ -72,38 +71,104 @@ public class GetStatbookCommand implements CommandExecutor {
         String pStatus = switch (hcPlayer.getStatus()) {
             case ALIVE -> "Alive";
             case DEAD -> "Dead";
+            case NETHER -> "Nether";
+            case END -> "End";
             case VICTORY -> "Victory!";
         };
 
-        String basicInfo = player.getName() + "\n\n" + pStatus + "\n\n" + Utils.convertTime(hcPlayer.getTime());
+        TextComponent timeString = Utils.convertTime(hcPlayer.getTime());
+        String basicInfo = "Player: " + player.getName() +
+                "\n\nProgression: " + pStatus +
+                "\n\nTime Played: " + timeString.content();
 
-        bookMeta.addPages(Component.text(basicInfo),
-                Component.text(getPageString(sortByValue(hcPlayer.getStatistics().getDamageDealtList()),
-                        new StringBuilder("=== Weapons Used ===\n"))),
-                Component.text(getPageString(sortByValue(hcPlayer.getStatistics().getMobKillList()),
-                        new StringBuilder("=== Monster Kills ===\n"))),
-                Component.text(getPageString(sortByValue(hcPlayer.getStatistics().getConsumeFoodList()),
-                        new StringBuilder("=== Food Eaten ===\n"))),
-                Component.text(getPageString(sortByValue(hcPlayer.getStatistics().getDrinkPotionList()),
-                        new StringBuilder("=== Potions Used ===\n")))
-//                Component.text(getPageString(sortByValue(hcPlayer.getStatistics().getDamageDealtList()),
-//                        new StringBuilder("=== Trades Made ===\n"))),
-//                Component.text(getPageString(sortByValue(hcPlayer.getStatistics().getDamageDealtList()),
-//                        new StringBuilder("=== Eyes Used ===\n")))
-        );
+        Map<StatisticsHandler.STATTYPE, Map<Integer, String>> pageMap = new HashMap<>();
+        List<String> pageList = new ArrayList<>();
+
+        populatePageList(pageList, hcPlayer);
+        bookMeta.addPages(Component.text(basicInfo));
+
+        for (String entry : pageList) {
+            bookMeta.addPages(Component.text(entry));
+        }
         return bookMeta;
     }
 
-    public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
-        List<Map.Entry<K, V>> list = new ArrayList<>(map.entrySet());
-        list.sort(Map.Entry.comparingByValue());
-        Map<K, V> result = new LinkedHashMap<>();
-        for (Map.Entry<K, V> entry : list) {
-            result.put(entry.getKey(), entry.getValue());
+    private void populatePageList(List<String> pageList, HCPlayer hcPlayer) {
+        Map<String, Integer> weaponList = sortByValue(hcPlayer.getStatistics().getDamageDealtList());
+        Map<String, Integer> damageList = sortByValue(hcPlayer.getStatistics().getDamageTakenList());
+        Map<String, Integer> monsterList = sortByValue(hcPlayer.getStatistics().getMobKillList());
+        Map<String, Integer> foodList = sortByValue(hcPlayer.getStatistics().getConsumeFoodList());
+        Map<String, Integer> potionList = sortByValue(hcPlayer.getStatistics().getDrinkPotionList());
+        Map<String, Integer> craftedList = sortByValue(hcPlayer.getStatistics().getItemCraftedList());
+        Map<String, Integer> eyeList = sortByValue(hcPlayer.getStatistics().getEyesUsedList());
+        Map<String, Integer> tradeList = sortByValue(hcPlayer.getStatistics().getTradesList());
+
+        processPages(pageList, weaponList, StatisticsHandler.STATTYPE.DAMAGE_DEALT);
+        processPages(pageList, damageList, StatisticsHandler.STATTYPE.DAMAGE_TAKEN);
+        processPages(pageList, monsterList, StatisticsHandler.STATTYPE.MOB_KILL);
+        processPages(pageList, foodList, StatisticsHandler.STATTYPE.CONSUME_FOOD);
+        processPages(pageList, potionList, StatisticsHandler.STATTYPE.DRINK_POTION);
+        processPages(pageList, craftedList, StatisticsHandler.STATTYPE.ITEM_CRAFTED);
+        processPages(pageList, eyeList, StatisticsHandler.STATTYPE.EYE_USED);
+        processPages(pageList, tradeList, StatisticsHandler.STATTYPE.TRADES_MADE);
+    }
+
+    private void processPages(List<String> pageList, Map<String, Integer> statList, StatisticsHandler.STATTYPE stat) {
+        String title = "";
+        switch (stat) {
+            case DAMAGE_DEALT -> title = "== Weapons Used ==";
+            case DAMAGE_TAKEN -> title = "== Damage Taken ==";
+            case MOB_KILL -> title = "== Mob Kills ==";
+            case CONSUME_FOOD -> title = "== Food Consumed ==";
+            case DRINK_POTION -> title = "== Potions Used ==";
+            case ITEM_CRAFTED -> title = "== Items Crafted ==";
+            case EYE_USED -> title = "== Eyes Used ==";
+            case TRADES_MADE -> title = "== Trades Made ==";
         }
 
+        StringBuilder sb = new StringBuilder();
+        Map<String, Integer> tempMap = new HashMap<>();
+        int pageIndex = 0;
+        int entryIndex = 1;
+
+        for (Map.Entry<String, Integer> entry : statList.entrySet()) {
+            tempMap.put(entry.getKey(), entry.getValue());
+            if (entryIndex == (statList.entrySet().size()) || (entryIndex % 13) == 0) {
+                String pageString = getPageString(sortByValue(tempMap),
+                        sb.insert(0, (pageIndex + 1))
+                                .append(title)
+                                .append(pageIndex + 1)
+                                .append("\n"));
+                pageList.add(pageString);
+                pageIndex++;
+                tempMap.clear();
+                sb = new StringBuilder();
+            }
+            entryIndex++;
+        }
+    }
+
+
+    public static Map<String, Integer> sortByValue(Map<String, Integer> map) {
+        List<Map.Entry<String, Integer>> list = new ArrayList<>(map.entrySet());
+        list.sort(Map.Entry.<String, Integer>comparingByValue().reversed());
+        Map<String, Integer> result = new LinkedHashMap<>();
+        for (Map.Entry<String, Integer> entry : list) {
+            result.put(entry.getKey(), entry.getValue());
+        }
         return result;
     }
+
+//    public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
+//        List<Map.Entry<K, V>> list = new ArrayList<>(map.entrySet());
+//        list.sort(Map.Entry.comparingByValue());
+//        Map<K, V> result = new LinkedHashMap<>();
+//        for (Map.Entry<K, V> entry : list) {
+//            result.put(entry.getKey(), entry.getValue());
+//        }
+//
+//        return result;
+//    }
 
     private String getPageString(Map<String, Integer> inputMap, StringBuilder fmtString) {
         if (inputMap.isEmpty()) return fmtString.toString();

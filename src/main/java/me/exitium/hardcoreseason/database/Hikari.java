@@ -25,14 +25,11 @@ public record Hikari(HardcoreSeason plugin) {
         while (conn == null && tries < 3) {
             HikariConfig config = new HikariConfig();
 
-            plugin.getLogger().severe(storageType + " : " + type);
-
             switch (type) {
                 case "MYSQL" -> {
                     String baseURL = "jdbc:mysql://";
                     String hostname = plugin.getConfig().getString("database.hostname");
                     int port = plugin.getConfig().getInt("database.port");
-//                String database = plugin.getConfig().getString("database.db-name");
                     String username = plugin.getConfig().getString("database.username");
                     String password = plugin.getConfig().getString("database.password");
                     String finalURL = baseURL + hostname + ":" + port + "/";

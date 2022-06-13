@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public class HCWorldManager {
     private final HardcoreSeason plugin;
@@ -131,8 +130,8 @@ public class HCWorldManager {
 
     public boolean isHardcoreWorld(String worldName) {
         String hardcoreName = plugin.getConfig().getString("hardcore-world");
-        return Objects.equals(worldName, hardcoreName) ||
-                Objects.equals(worldName, hardcoreName + "_NETHER") ||
-                Objects.equals(worldName, hardcoreName + "_THE_END");
+        return worldName.equalsIgnoreCase(hardcoreName) ||
+                worldName.equalsIgnoreCase(hardcoreName + "_nether") ||
+                worldName.equalsIgnoreCase(hardcoreName + "_the_end");
     }
 }

@@ -9,13 +9,13 @@ import java.sql.SQLException;
 
 public record DatabaseWriter(HardcoreSeason plugin) {
 
-    public void addPlayer(HCPlayer player) {
+    public void addPlayer(HCPlayer hcPlayer) {
         try (PreparedStatement ps = plugin.getSqlConnection().prepareStatement(
                 "INSERT INTO hardcore_season (uuid, season_number, status) " +
                         "VALUES(?, ?, ?);")) {
-            ps.setObject(1, Utils.asBytes(player.getUUID()));
+            ps.setObject(1, Utils.asBytes(hcPlayer.getUUID()));
             ps.setInt(2, plugin.getSeasonNumber());
-            ps.setInt(3, player.getStatus().ordinal());
+            ps.setInt(3, hcPlayer.getStatus().ordinal());
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -23,7 +23,7 @@ public record DatabaseWriter(HardcoreSeason plugin) {
         }
     }
 
-    public void updatePlayer(HCPlayer player) {
+    public void updatePlayer(HCPlayer hcPlayer) {
         String mysqlUpsert = "INSERT INTO hardcore_season (uuid, season_number, status, time, spawn_point, death_type, return_location, " +
                 "monster_kills, damage_taken, damage_dealt, items_crafted, trades_made, food_eaten, potions_used, eyes_used) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
@@ -45,6 +45,7 @@ public record DatabaseWriter(HardcoreSeason plugin) {
                 "monster_kills, damage_taken, damage_dealt, items_crafted, trades_made, food_eaten, potions_used, eyes_used) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
                 "ON CONFLICT(uuid, season_number) DO UPDATE SET " +
+                "status=excluded.status, " +
                 "time=excluded.time, " +
                 "spawn_point=excluded.spawn_point, " +
                 "death_type=excluded.death_type, " +
@@ -61,21 +62,21 @@ public record DatabaseWriter(HardcoreSeason plugin) {
         try (PreparedStatement ps = plugin.getSqlConnection().prepareStatement(
                 plugin.getDb().getStorageType().equals("MYSQL") ? mysqlUpsert : sqliteUpsert)) {
 
-            ps.setObject(1, Utils.asBytes(player.getUUID()));
+            ps.setObject(1, Utils.asBytes(hcPlayer.getUUID()));
             ps.setInt(2, plugin.getSeasonNumber());
-            ps.setInt(3, player.getStatus().ordinal());
-            ps.setLong(4, player.getTime());
-            ps.setString(5, player.getBedLocation());
-            ps.setString(6, player.getDeathMessage());
-            ps.setString(7, player.getReturnLocation());
-            ps.setString(8, player.getStatistics().toJson(player.getStatistics().getMobKillList()));
-            ps.setString(9, player.getStatistics().toJson(player.getStatistics().getDamageTakenList()));
-            ps.setString(10, player.getStatistics().toJson(player.getStatistics().getDamageDealtList()));
-            ps.setString(11, player.getStatistics().toJson(player.getStatistics().getItemCraftedList()));
-            ps.setString(12, player.getStatistics().toJson(player.getStatistics().getTradesList()));
-            ps.setString(13, player.getStatistics().toJson(player.getStatistics().getConsumeFoodList()));
-            ps.setString(14, player.getStatistics().toJson(player.getStatistics().getDrinkPotionList()));
-            ps.setString(15, player.getStatistics().toJson(player.getStatistics().getEyesUsedList()));
+            ps.setInt(3, hcPlayer.getStatus().ordinal());
+            ps.setLong(4, hcPlayer.getTime());
+            ps.setString(5, hcPlayer.getBedLocation());
+            ps.setString(6, hcPlayer.getDeathMessage());
+            ps.setString(7, hcPlayer.getReturnLocation());
+            ps.setString(8, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getMobKillList()));
+            ps.setString(9, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getDamageTakenList()));
+            ps.setString(10, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getDamageDealtList()));
+            ps.setString(11, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getItemCraftedList()));
+            ps.setString(12, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getTradesList()));
+            ps.setString(13, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getConsumeFoodList()));
+            ps.setString(14, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getDrinkPotionList()));
+            ps.setString(15, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getEyesUsedList()));
 
             ps.executeUpdate();
         } catch (SQLException e) {

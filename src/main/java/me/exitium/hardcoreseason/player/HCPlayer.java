@@ -7,6 +7,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 public class HCPlayer {
@@ -17,6 +18,7 @@ public class HCPlayer {
     private String bedLocation;
     private long time;
     private String returnLocation;
+
     // Temporary variables
     private Location lastLocation;
     private long timeCounter;
@@ -53,10 +55,6 @@ public class HCPlayer {
         return status;
     }
 
-    public void setStatus(STATUS status) {
-        this.status = status;
-    }
-
     public String getBedLocation() {
         return bedLocation;
     }
@@ -81,17 +79,22 @@ public class HCPlayer {
         return time;
     }
 
-    public void setTime(long time) {
-        this.time = time;
+    public void setTimeCounter(long timeCounter) {
+        this.timeCounter = timeCounter;
     }
 
     public void updateTime() {
-        this.time = (int) (System.currentTimeMillis() - timeCounter) + time;
+        if (timeCounter == 0) return;
+        this.time = ((System.currentTimeMillis() - timeCounter)) + time;
         this.timeCounter = System.currentTimeMillis();
     }
 
     public String getReturnLocation() {
         return returnLocation;
+    }
+
+    public void setReturnLocation(Location returnLocation) {
+        this.returnLocation = String.format("%d:%d:%d", returnLocation.getBlockX(), returnLocation.getBlockY(), returnLocation.getBlockZ());
     }
 
     public String getDeathMessage() {
@@ -137,9 +140,35 @@ public class HCPlayer {
         this.shulkerInventory = contents;
     }
 
+    public void setStatus(STATUS status) {
+        this.status = status;
+    }
+
     public enum STATUS {
         ALIVE,
         DEAD,
+        NETHER,
+        END,
         VICTORY
+    }
+
+    @Override
+    public String toString() {
+        return "HCPlayer{" +
+                "uuid=" + uuid +
+                ", status=" + status +
+                ", statistics=" + statistics +
+                ", deathMessage='" + deathMessage + '\'' +
+                ", bedLocation='" + bedLocation + '\'' +
+                ", time=" + time +
+                ", returnLocation='" + returnLocation + '\'' +
+                ", lastLocation=" + lastLocation +
+                ", timeCounter=" + timeCounter +
+                ", teleportTaskID=" + teleportTaskID +
+                ", shulkerInventory=" + Arrays.toString(shulkerInventory) +
+                ", artifactLocation=" + artifactLocation +
+                ", enterVictoryPortal=" + enterVictoryPortal +
+                ", netherBedLocation=" + netherBedLocation +
+                '}';
     }
 }

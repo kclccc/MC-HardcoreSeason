@@ -2,9 +2,15 @@ package me.exitium.hardcoreseason;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import net.md_5.bungee.api.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.persistence.PersistentDataAdapterContext;
+import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
@@ -16,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 public class Utils {
     public static String colorize(final String text) {
         return text == null ? null : ChatColor.translateAlternateColorCodes('&', text);
+//        return text == null ? null : LegacyComponentSerializer.legacy('&').deserialize(text);
     }
 
     public static byte[] asBytes(UUID uuid) {
@@ -51,10 +58,39 @@ public class Utils {
         return new Location(world, pSpawnX, pSpawnY, pSpawnZ);
     }
 
-    public static String convertTime(long millis){
-        return String.format("%02d:%02d",
-                TimeUnit.MILLISECONDS.toHours(millis),
-                TimeUnit.MILLISECONDS.toMinutes(millis) -
-                        TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)));
+    public static TextComponent convertTime(long millis) {
+        return Component.text(TimeUnit.MILLISECONDS.toHours(millis), NamedTextColor.GOLD)
+                .append(Component.text("h ", NamedTextColor.GRAY))
+                .append(Component.text(TimeUnit.MILLISECONDS.toMinutes(millis) -
+                        TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)), NamedTextColor.GOLD))
+                .append(Component.text("m", NamedTextColor.GRAY));
+    }
+
+    public static class UUIDDataType implements PersistentDataType<byte[], UUID> {
+        @Override
+        public @NotNull Class<byte[]> getPrimitiveType() {
+            return byte[].class;
+        }
+
+        @Override
+        public @NotNull Class<UUID> getComplexType() {
+            return UUID.class;
+        }
+
+        @Override
+        public byte @NotNull [] toPrimitive(UUID complex, PersistentDataAdapterContext context) {
+            ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+            bb.putLong(complex.getMostSignificantBits());
+            bb.putLong(complex.getLeastSignificantBits());
+            return bb.array();
+        }
+
+        @Override
+        public @NotNull UUID fromPrimitive(byte[] primitive, PersistentDataAdapterContext context) {
+            ByteBuffer bb = ByteBuffer.wrap(primitive);
+            long firstLong = bb.getLong();
+            long secondLong = bb.getLong();
+            return new UUID(firstLong, secondLong);
+        }
     }
 }
