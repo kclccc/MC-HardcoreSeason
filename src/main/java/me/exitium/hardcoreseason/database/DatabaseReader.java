@@ -5,6 +5,7 @@ import me.exitium.hardcoreseason.Utils;
 import me.exitium.hardcoreseason.player.HCPlayer;
 import me.exitium.hardcoreseason.statistics.StatisticsHandler;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,7 +16,7 @@ import java.util.UUID;
 public record DatabaseReader(HardcoreSeason plugin) {
 
     public boolean hcPlayerExists(UUID uuid) {
-        try (PreparedStatement ps = plugin.getSqlConnection().prepareStatement(
+        try (Connection connection = plugin.getSqlConnection(); PreparedStatement ps = connection.prepareStatement(
                 "SELECT * FROM hardcore_season WHERE uuid=? AND season_number=?")) {
             ps.setObject(1, Utils.asBytes(uuid));
             ps.setInt(2, plugin.getSeasonNumber());
@@ -28,11 +29,11 @@ public record DatabaseReader(HardcoreSeason plugin) {
         return true;
     }
 
-    public HCPlayer getPlayer(UUID uuid) {
-        try (PreparedStatement ps = plugin.getSqlConnection().prepareStatement(
+    public HCPlayer getPlayer(UUID uuid, int seasonNumber) {
+        try (Connection connection = plugin.getSqlConnection(); PreparedStatement ps = connection.prepareStatement(
                 "SELECT * FROM hardcore_season WHERE uuid=? AND season_number=? LIMIT 1")) {
             ps.setObject(1, Utils.asBytes(uuid));
-            ps.setInt(2, plugin.getSeasonNumber());
+            ps.setInt(2, seasonNumber);
 
             ResultSet result = ps.executeQuery();
 
@@ -61,7 +62,7 @@ public record DatabaseReader(HardcoreSeason plugin) {
     }
 
     public List<UUID> getAllPlayers(int seasonNumber) {
-        try (PreparedStatement ps = plugin.getSqlConnection().prepareStatement(
+        try (Connection connection = plugin.getSqlConnection(); PreparedStatement ps = connection.prepareStatement(
                 "SELECT uuid FROM hardcore_season WHERE season_number=?")) {
             ps.setInt(1, seasonNumber);
 

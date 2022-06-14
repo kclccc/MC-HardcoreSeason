@@ -94,7 +94,7 @@ public class HCPlayer {
     }
 
     public void setReturnLocation(Location returnLocation) {
-        this.returnLocation = String.format("%d:%d:%d", returnLocation.getBlockX(), returnLocation.getBlockY(), returnLocation.getBlockZ());
+        this.returnLocation = String.format("%s:%d:%d:%d", returnLocation.getWorld().getName(), returnLocation.getBlockX(), returnLocation.getBlockY(), returnLocation.getBlockZ());
     }
 
     public String getDeathMessage() {

@@ -20,7 +20,7 @@ public record SpectateCommand(HardcoreSeason plugin) implements CommandExecutor 
             sender.sendMessage("Command cannot be run from console!");
             return true;
         } else {
-            if(!plugin().hasPermission(player, "hardcoreseason.hasdied")) {
+            if (!plugin().hasPermission(player, "hardcoreseason.hasdied")) {
                 player.sendMessage(Component.text("You may only spectate once you have died!", NamedTextColor.RED));
                 return true;
             }
@@ -33,7 +33,8 @@ public record SpectateCommand(HardcoreSeason plugin) implements CommandExecutor 
                 }
 
                 HCPlayer hcPlayer = plugin.getOnlinePlayer(specPlayer.getUniqueId());
-                if (hcPlayer == null) {
+
+                if (hcPlayer.getStatus().equals(HCPlayer.STATUS.DEAD)) {
                     player.sendMessage(Component.text("You can only spectate ", NamedTextColor.GRAY)
                             .append(Component.text("alive ", NamedTextColor.GREEN))
                             .append(Component.text("players! \nUsage: "))

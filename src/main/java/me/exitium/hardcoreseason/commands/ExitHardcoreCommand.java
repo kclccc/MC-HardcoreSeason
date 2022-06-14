@@ -45,7 +45,7 @@ public record ExitHardcoreCommand(HardcoreSeason plugin) implements CommandExecu
             HCPlayer hcPlayer = plugin.getOnlinePlayer(uuid);
 
             if (hcPlayer == null) {
-                hcPlayer = plugin.getDb().getReader().getPlayer(uuid);
+                hcPlayer = plugin.getDb().getReader().getPlayer(uuid, plugin.getSeasonNumber());
                 if (hcPlayer == null) {
                     plugin.getLogger().severe("NULL player from database but was in HARDCORE!");
                     player.sendMessage("NULL player from database, returning to softcore world!");
@@ -55,8 +55,13 @@ public record ExitHardcoreCommand(HardcoreSeason plugin) implements CommandExecu
             }
 
             if (hcPlayer.getStatus().equals(HCPlayer.STATUS.DEAD)) {
-                player.teleport(Utils.processLocationString(
-                        plugin.getHcWorldManager().getSoftcoreWorld(), hcPlayer.getReturnLocation()));
+                String returnLoc = hcPlayer.getReturnLocation();
+                if (returnLoc == null) {
+                    player.teleport(plugin.getHcWorldManager().getSoftcoreWorld().getSpawnLocation());
+                } else {
+                    player.teleport(Utils.processLocationString(returnLoc));
+                }
+                
                 player.sendMessage(Component.text("Thanks for playing, better luck next time!", NamedTextColor.GRAY));
                 return true;
             }
@@ -74,8 +79,7 @@ public record ExitHardcoreCommand(HardcoreSeason plugin) implements CommandExecu
                     String returnLocation = finalHcPlayer.getReturnLocation();
 
                     if (returnLocation != null) {
-                        Location tempLocation = Utils.processLocationString(
-                                plugin.getHcWorldManager().getSoftcoreWorld(), returnLocation);
+                        Location tempLocation = Utils.processLocationString(returnLocation);
                         player.teleport(tempLocation);
                     } else {
                         player.teleport(plugin.getHcWorldManager().getSoftcoreWorld().getSpawnLocation());
@@ -104,7 +108,7 @@ public record ExitHardcoreCommand(HardcoreSeason plugin) implements CommandExecu
 
     private void validateArtifact(UUID uuid) {
         Player player = Bukkit.getPlayer(uuid);
-        if(player == null) {
+        if (player == null) {
             plugin.getLogger().warning("PLAYER was NULL while trying to validate artifact!");
             // TODO: Backup items inside the artifact before returning
             return;

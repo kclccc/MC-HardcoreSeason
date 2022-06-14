@@ -28,11 +28,16 @@ public record EnterHardcoreCommand(HardcoreSeason plugin) implements CommandExec
                 return true;
             }
 
+            if (!plugin.getHcWorldManager().getSoftcoreWorld().getName().equals(player.getWorld().getName())) {
+                player.sendMessage(Component.text("You can only enter hardcore from the main overworld!"));
+                return true;
+            }
+
             HCPlayer hcPlayer;
             boolean isNewPlayer = false;
 
             if (plugin.getDb().getReader().hcPlayerExists(player.getUniqueId())) {
-                hcPlayer = plugin.getDb().getReader().getPlayer(player.getUniqueId());
+                hcPlayer = plugin.getDb().getReader().getPlayer(player.getUniqueId(), plugin().getSeasonNumber());
                 if (hcPlayer == null) {
                     player.sendMessage(Component.text("HCPLAYER was null after database call!"));
                     return false;
@@ -70,7 +75,7 @@ public record EnterHardcoreCommand(HardcoreSeason plugin) implements CommandExec
             }
 
             if (hcPlayer.getBedLocation() != null) {
-                Location playerBed = Utils.processLocationString(hcWorld, hcPlayer.getBedLocation());
+                Location playerBed = Utils.processLocationString(hcPlayer.getBedLocation());
                 hcPlayer.setReturnLocation(player.getLocation());
                 player.teleport(playerBed);
                 return true;
@@ -78,6 +83,7 @@ public record EnterHardcoreCommand(HardcoreSeason plugin) implements CommandExec
             hcPlayer.setReturnLocation(player.getLocation());
             if (player.teleport(hcWorld.getSpawnLocation())) {
                 if (isNewPlayer) {
+                    Utils.saveInventoryToFile(plugin, player);
                     player.setExp(0);
                     player.setLevel(0);
                     player.setHealth(20);

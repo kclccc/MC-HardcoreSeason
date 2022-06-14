@@ -5,6 +5,7 @@ import com.onarandombox.multiverseinventories.MultiverseInventories;
 import com.onarandombox.multiverseinventories.WorldGroup;
 import com.onarandombox.multiverseinventories.profile.WorldGroupManager;
 import com.onarandombox.multiverseinventories.share.Sharables;
+import com.zaxxer.hikari.HikariDataSource;
 import me.exitium.hardcoreseason.commands.*;
 import me.exitium.hardcoreseason.database.DatabaseManager;
 import me.exitium.hardcoreseason.database.Hikari;
@@ -23,6 +24,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +36,7 @@ public final class HardcoreSeason extends JavaPlugin {
     Map<UUID, Integer> teleportingPlayers;
     HCWorldManager hcWorldManager;
     DatabaseManager db;
-    Connection sqlConnection;
+    HikariDataSource hikari;
     MultiverseCore multiverseCore;
     private HardcoreSeason instance;
     private YamlConfiguration rewardsConfig;
@@ -81,19 +83,16 @@ public final class HardcoreSeason extends JavaPlugin {
         }
 
         db = new DatabaseManager(this);
-        sqlConnection = new Hikari(this).setupHikari(getDb().getStorageType());
+        hikari = new Hikari(this).getHikariSource(getDb().getStorageType());
 
-        if (sqlConnection == null) {
-            getLogger().warning("SQL Connection is null, data cannot be saved! Please check your config options.");
-        } else {
-            String storageType = db.getStorageType();
-            if (storageType == null || storageType.equals("")) {
-                getLogger().info("Could not get storage type from config file. Defaulting to SQLITE.");
-                storageType = "SQLITE";
-            }
-            if (storageType.equals("MYSQL")) db.createDatabase();
-            db.initTable(storageType);
+
+        String storageType = db.getStorageType();
+        if (storageType == null || storageType.equals("")) {
+            getLogger().info("Could not get storage type from config file. Defaulting to SQLITE.");
+            storageType = "SQLITE";
         }
+//        if (storageType.equals("MYSQL")) db.createDatabase();
+        db.initTable(storageType);
 
         setupPermissions();
         setupMVInventoryGroups();
@@ -111,6 +110,7 @@ public final class HardcoreSeason extends JavaPlugin {
             put("scoreboardCommand", getCommand("hclist"));
             put("spectateCommand", getCommand("hcspectate"));
             put("resetPlayerCommand", getCommand("hcresetplayer"));
+            put("newSeasonCommand", getCommand("hcnewseason"));
         }};
 
         for (Map.Entry<String, PluginCommand> entry : commandList.entrySet()) {
@@ -128,29 +128,30 @@ public final class HardcoreSeason extends JavaPlugin {
                 case "scoreboardCommand" -> entry.getValue().setExecutor(new ShowScoreboardCommand(this));
                 case "spectateCommand" -> entry.getValue().setExecutor(new SpectateCommand(this));
                 case "resetPlayerCommand" -> entry.getValue().setExecutor(new ResetPlayerCommand(this));
+                case "newSeasonCommand" -> entry.getValue().setExecutor(new NewSeasonCommand(this));
             }
         }
     }
 
     private void registerEvents() {
         final PluginManager pluginManager = getServer().getPluginManager();
-        pluginManager.registerEvents(new PlayerJoinListener(this), this);
-        pluginManager.registerEvents(new PlayerQuitListener(this), this);
+        pluginManager.registerEvents(new BarterListener(this), this);
         pluginManager.registerEvents(new BedListener(this), this);
         pluginManager.registerEvents(new BlockListener(this), this);
         pluginManager.registerEvents(new ConsumeItemListener(this), this);
+        pluginManager.registerEvents(new CraftItemListener(this), this);
         pluginManager.registerEvents(new DeathRespawnListener(this), this);
         pluginManager.registerEvents(new EntityDamageListener(this), this);
         pluginManager.registerEvents(new EntityDeathListener(this), this);
         pluginManager.registerEvents(new GamemodeListener(this), this);
         pluginManager.registerEvents(new InventoryListener(this), this);
-        pluginManager.registerEvents(new PlayerTeleportListener(this), this);
-        pluginManager.registerEvents(new PlayerInteractListener(this), this);
-        pluginManager.registerEvents(new PlayerMoveListener(this), this);
-        pluginManager.registerEvents(new CraftItemListener(this), this);
-        pluginManager.registerEvents(new BarterListener(this), this);
         pluginManager.registerEvents(new PlayerDropItemListener(this), this);
+        pluginManager.registerEvents(new PlayerInteractListener(this), this);
+        pluginManager.registerEvents(new PlayerJoinListener(this), this);
+        pluginManager.registerEvents(new PlayerMoveListener(this), this);
         pluginManager.registerEvents(new PlayerPickupItemListener(this), this);
+        pluginManager.registerEvents(new PlayerQuitListener(this), this);
+        pluginManager.registerEvents(new PlayerTeleportListener(this), this);
     }
 
     public List<UUID> getAllOnlinePlayers() {
@@ -195,7 +196,11 @@ public final class HardcoreSeason extends JavaPlugin {
     }
 
     public Connection getSqlConnection() {
-        return sqlConnection;
+        try {
+            return hikari.getConnection();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public MultiverseCore getMultiverseCore() {
@@ -209,7 +214,7 @@ public final class HardcoreSeason extends JavaPlugin {
     private void createRewardsConfig() {
         File rewardsConfigFile = new File(getDataFolder(), "rewards.yml");
         if (!rewardsConfigFile.exists()) {
-            if(rewardsConfigFile.getParentFile().mkdirs())
+            if (rewardsConfigFile.getParentFile().mkdirs())
                 saveResource("rewards.yml", false);
         }
 
@@ -260,6 +265,12 @@ public final class HardcoreSeason extends JavaPlugin {
 
     public int getSeasonNumber() {
         return seasonNumber;
+    }
+
+    public void incrementSeasonNumber() {
+        seasonNumber++;
+        getConfig().set("season-number", seasonNumber);
+        saveConfig();
     }
 
     private void setupPermissions() {

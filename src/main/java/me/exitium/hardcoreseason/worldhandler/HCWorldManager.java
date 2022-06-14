@@ -62,10 +62,11 @@ public class HCWorldManager {
         return softcoreWorld;
     }
 
-    public void createAll() {
+    public boolean createAll() {
         for (World.Environment env : hardcoreWorlds.keySet()) {
             createWorld(env);
         }
+        return true;
     }
 
     public void createWorld(World.Environment environment) {
@@ -109,13 +110,13 @@ public class HCWorldManager {
     }
 
     private void deleteWorld(World world) {
-        if(!plugin.getHcWorldManager().isHardcoreWorld(world.getName())){
+        if (!plugin.getHcWorldManager().isHardcoreWorld(world.getName())) {
             plugin.getLogger().severe("Attempting to delete a world that's not HARDCORE : " +
                     world.getName() + " Action: CANCELLED");
             return;
         }
 
-        if(plugin.getMultiverseCore().deleteWorld(world.getName())) {
+        if (plugin.getMultiverseCore().deleteWorld(world.getName())) {
             plugin.getLogger().info("Successfully deleted HARDCORE world: " + world.getName());
             return;
         }
@@ -137,7 +138,7 @@ public class HCWorldManager {
                 section.getString("name"),
                 section.getString("alias"),
                 section.getString("color"),
-                section.getObject("difficulty", Difficulty.class),
+                Difficulty.NORMAL,
                 section.getObject("type", WorldType.class),
                 section.getStringList("spawn-exceptions")
         );

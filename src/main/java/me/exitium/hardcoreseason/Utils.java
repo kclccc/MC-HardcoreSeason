@@ -5,18 +5,24 @@ import com.google.gson.reflect.TypeToken;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class Utils {
@@ -48,13 +54,15 @@ public class Utils {
         return gson.fromJson(json, mapType);
     }
 
-    public static Location processLocationString(World world, String location) {
+    public static Location processLocationString(String location) {
         String[] splitLoc = location.split(":");
 
-        double pSpawnX = Double.parseDouble(splitLoc[0]);
-        double pSpawnY = Double.parseDouble(splitLoc[1]);
-        double pSpawnZ = Double.parseDouble(splitLoc[2]);
+        String worldName = splitLoc[0];
+        double pSpawnX = Double.parseDouble(splitLoc[1]);
+        double pSpawnY = Double.parseDouble(splitLoc[2]);
+        double pSpawnZ = Double.parseDouble(splitLoc[3]);
 
+        World world = Bukkit.getWorld(worldName);
         return new Location(world, pSpawnX, pSpawnY, pSpawnZ);
     }
 
@@ -91,6 +99,33 @@ public class Utils {
             long firstLong = bb.getLong();
             long secondLong = bb.getLong();
             return new UUID(firstLong, secondLong);
+        }
+    }
+
+    public static void saveInventoryToFile(HardcoreSeason plugin, Player player) {
+        List<ItemStack> inventoryList = new ArrayList<>();
+        for (ItemStack itemStack : player.getInventory()) {
+            inventoryList.add(itemStack);
+        }
+
+        Date date = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd HH-mm-ss");
+
+        File playerFolder = new File(plugin.getDataFolder(), "PlayerData");
+        if (!playerFolder.exists()) {
+            playerFolder.mkdir();
+        }
+
+        File playerFile = new File(playerFolder, player.getName() + "-" + dateFormat.format(date) + ".yml");
+        FileConfiguration playerConfig = new YamlConfiguration();
+        playerConfig.set("name", player.getName());
+        playerConfig.set("exp", player.getExp());
+        playerConfig.set("level", player.getLevel());
+        playerConfig.set("inventory", inventoryList);
+        try {
+            playerConfig.save(playerFile);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

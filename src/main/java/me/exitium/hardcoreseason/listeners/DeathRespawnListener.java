@@ -6,11 +6,11 @@ import me.exitium.hardcoreseason.player.HCPlayer;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPortalEnterEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -19,7 +19,7 @@ import java.util.Arrays;
 public record DeathRespawnListener(HardcoreSeason plugin) implements Listener {
 
     @EventHandler
-    public void onDeath(PlayerDeathEvent event) {
+    public void onPlayerDeath(PlayerDeathEvent event) {
         World world = event.getEntity().getWorld();
 
         // If player dies in the HC world, log some info about it and set hasdied permission
@@ -38,6 +38,9 @@ public record DeathRespawnListener(HardcoreSeason plugin) implements Listener {
             hcPlayer.updateTime();
             hcPlayer.killPlayer(String.valueOf(event.deathMessage()), player.getLocation());
 
+            plugin.getLogger().severe(String.valueOf(event.deathMessage()));
+
+
             new BukkitRunnable() {
                 @Override
                 public void run() {
@@ -54,21 +57,22 @@ public record DeathRespawnListener(HardcoreSeason plugin) implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();
 
         if (!plugin.getHcWorldManager().isHardcoreWorld(player.getWorld().getName())) return;
         HCPlayer hcPlayer = plugin.getOnlinePlayer(player.getUniqueId());
 
-        if (event.getRespawnFlags().containsAll(Arrays.asList(PlayerRespawnEvent.RespawnFlag.END_PORTAL, PlayerRespawnEvent.RespawnFlag.BED_SPAWN))) {
+        if (event.getRespawnFlags().containsAll(
+                Arrays.asList(PlayerRespawnEvent.RespawnFlag.END_PORTAL, PlayerRespawnEvent.RespawnFlag.BED_SPAWN))) {
             String spawnLocation = hcPlayer.getBedLocation();
             World hcWorld = Bukkit.getWorld(plugin.getHcWorldManager().getHCWorld(World.Environment.NORMAL));
             Location respawnLoc = null;
             if (hcWorld != null) {
                 respawnLoc = hcWorld.getSpawnLocation();
                 if (spawnLocation != null) {
-                    respawnLoc = Utils.processLocationString(hcWorld, spawnLocation);
+                    respawnLoc = Utils.processLocationString(spawnLocation);
                 }
 
                 event.setRespawnLocation(respawnLoc);

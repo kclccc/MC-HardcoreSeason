@@ -1,7 +1,7 @@
 name: HardcoreSeason
 version: '${project.version}'
 main: me.exitium.hardcoreseason.HardcoreSeason
-api-version: 1.18
+api-version: 1.19
 
 depend: [ Vault, Multiverse-Core, Multiverse-Inventories ]
 
@@ -36,7 +36,7 @@ commands:
     permission: op
   hcresetplayer:
     description: Reset an individual player for the current season.
-    aliases: [/hcresetpl]
+    aliases: [ /hcresetpl ]
     usage: /<command>
     permission: op
 

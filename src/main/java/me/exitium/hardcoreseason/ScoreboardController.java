@@ -36,17 +36,19 @@ public record ScoreboardController(HardcoreSeason plugin) {
         for (UUID uuid : hardcorePlayers) {
             o.setDisplaySlot(DisplaySlot.SIDEBAR);
 
-            HCPlayer hcPlayer;
-            if (plugin.getOnlinePlayer(uuid) != null) {
-                hcPlayer = plugin.getOnlinePlayer(uuid);
-                hcPlayer.updateTime();
-            } else {
-                hcPlayer = plugin.getDb().getReader().getPlayer(uuid);
+            HCPlayer hcPlayer = plugin.getDb().getReader().getPlayer(uuid, seasonNumber);
+            if (hcPlayer == null) {
+                plugin.getLogger().warning("Player {" + uuid + "} returned NULL from database! Skipping...");
+                break;
             }
 
-            if (hcPlayer == null) {
-                plugin.getLogger().warning("Player loaded from database returned NULL. Was the connection interrupted?");
-                return;
+            HCPlayer onlinePlayer = plugin.getOnlinePlayer(uuid);
+            if (seasonNumber == plugin.getSeasonNumber() && onlinePlayer != null) {
+                if (!onlinePlayer.getStatus().equals(HCPlayer.STATUS.DEAD)) {
+                    onlinePlayer.updateTime();
+                    plugin.getDb().getWriter().updatePlayer(onlinePlayer);
+                }
+                hcPlayer = onlinePlayer;
             }
 
             TextComponent pStatus = switch (hcPlayer.getStatus()) {

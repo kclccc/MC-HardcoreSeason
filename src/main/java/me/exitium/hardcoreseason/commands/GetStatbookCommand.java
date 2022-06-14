@@ -30,7 +30,8 @@ public record GetStatbookCommand(HardcoreSeason plugin) implements CommandExecut
             if (!plugin.getHcWorldManager().isHardcoreWorld(player.getWorld().getName())) return false;
             HCPlayer hcPlayer = plugin.getOnlinePlayer(player.getUniqueId());
 
-            hcPlayer.updateTime();
+            if (!hcPlayer.getStatus().equals(HCPlayer.STATUS.DEAD))
+                hcPlayer.updateTime();
 
             ItemStack bookItem = CheckForStatBook(player.getInventory());
             ItemStack writtenBook = new ItemStack(Material.WRITTEN_BOOK);
@@ -119,7 +120,7 @@ public record GetStatbookCommand(HardcoreSeason plugin) implements CommandExecut
             case DAMAGE_DEALT -> title = "== Weapons Used ==";
             case DAMAGE_TAKEN -> title = "== Damage Taken ==";
             case MOB_KILL -> title = "== Mob Kills ==";
-            case CONSUME_FOOD -> title = "== Food Consumed ==";
+            case CONSUME_FOOD -> title = "== Food Eaten ==";
             case DRINK_POTION -> title = "== Potions Used ==";
             case ITEM_CRAFTED -> title = "== Items Crafted ==";
             case EYE_USED -> title = "== Eyes Used ==";

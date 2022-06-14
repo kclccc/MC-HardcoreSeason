@@ -1,5 +1,6 @@
 package me.exitium.hardcoreseason;
 
+import me.exitium.hardcoreseason.player.HCPlayer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -17,7 +18,8 @@ public record SpectatorGUI(HardcoreSeason plugin) {
         Inventory invGui = Bukkit.createInventory(null, 18, Component.text("Hardcore Players"));
 
         for (UUID uuid : plugin.getAllOnlinePlayers()) {
-            invGui.addItem(getPlayerHead(uuid));
+            if (!plugin.getOnlinePlayer(uuid).getStatus().equals(HCPlayer.STATUS.DEAD))
+                invGui.addItem(getPlayerHead(uuid));
         }
 
         player.openInventory(invGui);

@@ -1,6 +1,7 @@
 package me.exitium.hardcoreseason.listeners;
 
 import me.exitium.hardcoreseason.HardcoreSeason;
+import me.exitium.hardcoreseason.Utils;
 import me.exitium.hardcoreseason.database.DatabaseManager;
 import me.exitium.hardcoreseason.player.HCPlayer;
 import net.kyori.adventure.text.Component;
@@ -8,20 +9,13 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.World;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 public record PlayerJoinListener(HardcoreSeason plugin) implements Listener {
@@ -58,23 +52,7 @@ public record PlayerJoinListener(HardcoreSeason plugin) implements Listener {
         if (!db.getReader().hcPlayerExists(uuid)) {
             plugin.remPermission(Bukkit.getOfflinePlayer(uuid), "hardcoreseason.hasdied");
 
-            List<ItemStack> inventoryList = new ArrayList<>();
-            for (ItemStack itemStack : player.getInventory()) {
-                inventoryList.add(itemStack);
-            }
-
-            File playerFile = new File(plugin.getDataFolder(), player.getName() + ".yml");
-            FileConfiguration playerConfig = new YamlConfiguration();
-            playerConfig.set("name", player.getName());
-            playerConfig.set("exp", player.getExp());
-            playerConfig.set("level", player.getLevel());
-            playerConfig.set("inventory", inventoryList);
-            try {
-                playerConfig.save(playerFile);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
+            Utils.saveInventoryToFile(plugin, player);
             player.sendMessage(Component.text("A new season has begun since you left, Adding as new player!", NamedTextColor.RED));
             player.setExp(0);
             player.setLevel(0);
@@ -100,7 +78,7 @@ public record PlayerJoinListener(HardcoreSeason plugin) implements Listener {
             return;
         }
 
-        HCPlayer hcPlayer = db.getReader().getPlayer(uuid);
+        HCPlayer hcPlayer = db.getReader().getPlayer(uuid, plugin.getSeasonNumber());
         if (hcPlayer == null) {
             plugin.getLogger().warning("HCPLAYER returned NULL from database!");
             player.sendMessage(Component.text("ERR: HCPLAYER returned NULL from database!"));

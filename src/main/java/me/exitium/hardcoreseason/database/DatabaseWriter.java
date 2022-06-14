@@ -4,13 +4,14 @@ import me.exitium.hardcoreseason.HardcoreSeason;
 import me.exitium.hardcoreseason.Utils;
 import me.exitium.hardcoreseason.player.HCPlayer;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public record DatabaseWriter(HardcoreSeason plugin) {
 
     public void addPlayer(HCPlayer hcPlayer) {
-        try (PreparedStatement ps = plugin.getSqlConnection().prepareStatement(
+        try (Connection connection = plugin.getSqlConnection(); PreparedStatement ps = connection.prepareStatement(
                 "INSERT INTO hardcore_season (uuid, season_number, status) " +
                         "VALUES(?, ?, ?);")) {
             ps.setObject(1, Utils.asBytes(hcPlayer.getUUID()));
@@ -28,6 +29,7 @@ public record DatabaseWriter(HardcoreSeason plugin) {
                 "monster_kills, damage_taken, damage_dealt, items_crafted, trades_made, food_eaten, potions_used, eyes_used) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
                 "ON DUPLICATE KEY UPDATE " +
+                "status=VALUES(status)," +
                 "time=VALUES(time), " +
                 "spawn_point=VALUES(spawn_point), " +
                 "death_type=VALUES(death_type), " +
@@ -59,7 +61,7 @@ public record DatabaseWriter(HardcoreSeason plugin) {
                 "potions_used=excluded.potions_used, " +
                 "eyes_used=excluded.eyes_used;";
 
-        try (PreparedStatement ps = plugin.getSqlConnection().prepareStatement(
+        try (Connection connection = plugin.getSqlConnection(); PreparedStatement ps = connection.prepareStatement(
                 plugin.getDb().getStorageType().equals("MYSQL") ? mysqlUpsert : sqliteUpsert)) {
 
             ps.setObject(1, Utils.asBytes(hcPlayer.getUUID()));

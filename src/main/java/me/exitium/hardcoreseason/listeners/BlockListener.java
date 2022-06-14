@@ -5,6 +5,7 @@ import me.exitium.hardcoreseason.HardcoreSeason;
 import me.exitium.hardcoreseason.player.HCPlayer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
@@ -88,10 +89,10 @@ public record BlockListener(HardcoreSeason plugin) implements Listener {
         }
 
         Location playerBed = new Location(
-                event.getBlock().getWorld(),
-                Integer.parseInt(hcPlayer.getBedLocation().split(":")[0]),
+                Bukkit.getWorld(hcPlayer.getBedLocation().split(":")[0]),
                 Integer.parseInt(hcPlayer.getBedLocation().split(":")[1]),
-                Integer.parseInt(hcPlayer.getBedLocation().split(":")[2]));
+                Integer.parseInt(hcPlayer.getBedLocation().split(":")[2]),
+                Integer.parseInt(hcPlayer.getBedLocation().split(":")[3]));
 
         if (bedLocation.equals(playerBed)) {
             event.getPlayer().sendMessage(Component.text("Your spawn point has been removed!", NamedTextColor.RED));

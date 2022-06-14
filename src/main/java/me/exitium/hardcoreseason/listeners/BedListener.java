@@ -36,7 +36,7 @@ public record BedListener(HardcoreSeason plugin) implements Listener {
 
             player.sendMessage(textComponent);
 
-            String bedLoc = String.format("%d:%d:%d", bedLocation.getBlockX(), bedLocation.getBlockY(), bedLocation.getBlockZ());
+            String bedLoc = String.format("%s:%d:%d:%d", bedLocation.getWorld().getName(), bedLocation.getBlockX(), bedLocation.getBlockY(), bedLocation.getBlockZ());
             plugin.getOnlinePlayer(uuid).setBedLocation(bedLoc);
         }
     }
