@@ -43,25 +43,25 @@ public record BlockListener(HardcoreSeason plugin) implements Listener {
 
     @EventHandler
     public void onBlockDropItem(BlockDropItemEvent event) {
-        if (!event.getItems().isEmpty()) {
-            ItemStack droppedItem = event.getItems().get(0).getItemStack();
+        if (!plugin.getHcWorldManager().isHardcoreWorld(event.getPlayer().getWorld().getName())) return;
+        if (event.getItems().isEmpty()) return;
+        ItemStack droppedItem = event.getItems().get(0).getItemStack();
 
-            if (event.getBlockState() instanceof ShulkerBox) {
-                Block brokenBlock = event.getBlock();
-                NamespacedKey key = new NamespacedKey(plugin, "hc-box");
-                Location blockLoc = brokenBlock.getLocation();
-                UUID uuid = event.getPlayer().getUniqueId();
+        if (event.getBlockState() instanceof ShulkerBox) {
+            Block brokenBlock = event.getBlock();
+            NamespacedKey key = new NamespacedKey(plugin, "hc-box");
+            Location blockLoc = brokenBlock.getLocation();
+            UUID uuid = event.getPlayer().getUniqueId();
 
-                // If they broke an artifact at a saved location, re-add the persistent data since it's lost on placement.
-                if (plugin.getOnlinePlayer(uuid).getArtifactLocation().equals(blockLoc)) {
-                    ItemStack artifact = ItemStack.deserialize(plugin.getRewardsConfig().getConfigurationSection("dragon_artifact").getValues(true));
-                    ItemMeta im = droppedItem.getItemMeta();
-                    im.getPersistentDataContainer().set(key, PersistentDataType.INTEGER, 69);
-                    im.setLore(artifact.getItemMeta().getLore());
-                    droppedItem.setItemMeta(im);
+            // If they broke an artifact at a saved location, re-add the persistent data since it's lost on placement.
+            if (plugin.getOnlinePlayer(uuid).getArtifactLocation().equals(blockLoc)) {
+                ItemStack artifact = ItemStack.deserialize(plugin.getRewardsConfig().getConfigurationSection("dragon_artifact").getValues(true));
+                ItemMeta im = droppedItem.getItemMeta();
+                im.getPersistentDataContainer().set(key, PersistentDataType.INTEGER, 69);
+                im.setLore(artifact.getItemMeta().getLore());
+                droppedItem.setItemMeta(im);
 
-                    plugin.getOnlinePlayer(uuid).setArtifactLocation(null);
-                }
+                plugin.getOnlinePlayer(uuid).setArtifactLocation(null);
             }
         }
     }

@@ -49,6 +49,7 @@ public record Hikari(HardcoreSeason plugin) {
                 config.setConnectionTimeout(TimeUnit.SECONDS.toMillis(3));
                 config.setValidationTimeout(TimeUnit.SECONDS.toMillis(1));
                 config.setInitializationFailTimeout(0);
+                config.setMaxLifetime(TimeUnit.MINUTES.toMillis(10));
             }
 
             case "SQLITE" -> {
