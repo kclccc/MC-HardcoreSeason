@@ -35,9 +35,12 @@ public record ResetPlayerCommand(HardcoreSeason plugin) implements CommandExecut
                 return true;
             }
 
-            String returnLoc = plugin.getOnlinePlayer(resetPlayer.getUniqueId()).getReturnLocation();
+            String returnLoc = null;
+            if (plugin.getAllOnlinePlayers().contains(resetPlayer.getUniqueId())) {
+                returnLoc = plugin.getOnlinePlayer(resetPlayer.getUniqueId()).getReturnLocation();
+            }
 
-            HCPlayer hcPlayer = new HCPlayer(resetPlayer.getUniqueId());
+            HCPlayer hcPlayer = new HCPlayer(resetPlayer.getUniqueId(), resetPlayer.getName());
             plugin.getDb().getWriter().updatePlayer(hcPlayer);
             plugin.addOnlinePlayer(hcPlayer);
 

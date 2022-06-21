@@ -40,6 +40,7 @@ public record DatabaseReader(HardcoreSeason plugin) {
             if (result.next()) {
                 return new HCPlayer(
                         uuid,
+                        result.getString("player_name"),
                         HCPlayer.STATUS.values()[result.getInt("status")],
                         new StatisticsHandler(
                                 Utils.jsonToMap(result.getString("monster_kills")),
@@ -61,16 +62,21 @@ public record DatabaseReader(HardcoreSeason plugin) {
         return null;
     }
 
-    public List<UUID> getAllPlayers(int seasonNumber) {
+    public List<HCPlayer> getAllPlayers(int seasonNumber) {
         try (Connection connection = plugin.getSqlConnection(); PreparedStatement ps = connection.prepareStatement(
-                "SELECT uuid FROM hardcore_season WHERE season_number=?")) {
+                "SELECT * FROM hardcore_season WHERE season_number=?")) {
             ps.setInt(1, seasonNumber);
 
             ResultSet results = ps.executeQuery();
 
-            List<UUID> playerList = new ArrayList<>();
+            List<HCPlayer> playerList = new ArrayList<>();
             while (results.next()) {
-                playerList.add(Utils.asUuid(results.getBytes("uuid")));
+                playerList.add(new HCPlayer(
+                        Utils.asUuid(results.getBytes("uuid")),
+                        results.getString("player_name"),
+                        HCPlayer.STATUS.values()[results.getInt("status")],
+                        results.getLong("time"))
+                );
             }
             return playerList;
         } catch (SQLException e) {

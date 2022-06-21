@@ -12,11 +12,12 @@ public record DatabaseWriter(HardcoreSeason plugin) {
 
     public void addPlayer(HCPlayer hcPlayer) {
         try (Connection connection = plugin.getSqlConnection(); PreparedStatement ps = connection.prepareStatement(
-                "INSERT INTO hardcore_season (uuid, season_number, status) " +
+                "INSERT INTO hardcore_season (uuid, player_name, season_number, status) " +
                         "VALUES(?, ?, ?);")) {
             ps.setObject(1, Utils.asBytes(hcPlayer.getUUID()));
-            ps.setInt(2, plugin.getSeasonNumber());
-            ps.setInt(3, hcPlayer.getStatus().ordinal());
+            ps.setString(2, hcPlayer.getPlayerName());
+            ps.setInt(3, plugin.getSeasonNumber());
+            ps.setInt(4, hcPlayer.getStatus().ordinal());
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -25,9 +26,9 @@ public record DatabaseWriter(HardcoreSeason plugin) {
     }
 
     public void updatePlayer(HCPlayer hcPlayer) {
-        String mysqlUpsert = "INSERT INTO hardcore_season (uuid, season_number, status, time, spawn_point, death_type, return_location, " +
+        String mysqlUpsert = "INSERT INTO hardcore_season (uuid, player_name, season_number, status, time, spawn_point, death_type, return_location, " +
                 "monster_kills, damage_taken, damage_dealt, items_crafted, trades_made, food_eaten, potions_used, eyes_used) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
                 "ON DUPLICATE KEY UPDATE " +
                 "status=VALUES(status)," +
                 "time=VALUES(time), " +
@@ -43,9 +44,9 @@ public record DatabaseWriter(HardcoreSeason plugin) {
                 "potions_used=VALUES(potions_used), " +
                 "eyes_used=VALUES(eyes_used)";
 
-        String sqliteUpsert = "INSERT INTO hardcore_season (uuid, season_number, status, time, spawn_point, death_type, return_location, " +
+        String sqliteUpsert = "INSERT INTO hardcore_season (uuid, player_name, season_number, status, time, spawn_point, death_type, return_location, " +
                 "monster_kills, damage_taken, damage_dealt, items_crafted, trades_made, food_eaten, potions_used, eyes_used) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
                 "ON CONFLICT(uuid, season_number) DO UPDATE SET " +
                 "status=excluded.status, " +
                 "time=excluded.time, " +
@@ -65,20 +66,21 @@ public record DatabaseWriter(HardcoreSeason plugin) {
                 plugin.getDb().getStorageType().equals("MYSQL") ? mysqlUpsert : sqliteUpsert)) {
 
             ps.setObject(1, Utils.asBytes(hcPlayer.getUUID()));
-            ps.setInt(2, plugin.getSeasonNumber());
-            ps.setInt(3, hcPlayer.getStatus().ordinal());
-            ps.setLong(4, hcPlayer.getTime());
-            ps.setString(5, hcPlayer.getBedLocation());
-            ps.setString(6, hcPlayer.getDeathMessage());
-            ps.setString(7, hcPlayer.getReturnLocation());
-            ps.setString(8, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getMobKillList()));
-            ps.setString(9, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getDamageTakenList()));
-            ps.setString(10, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getDamageDealtList()));
-            ps.setString(11, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getItemCraftedList()));
-            ps.setString(12, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getTradesList()));
-            ps.setString(13, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getConsumeFoodList()));
-            ps.setString(14, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getDrinkPotionList()));
-            ps.setString(15, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getEyesUsedList()));
+            ps.setString(2, hcPlayer.getPlayerName());
+            ps.setInt(3, plugin.getSeasonNumber());
+            ps.setInt(4, hcPlayer.getStatus().ordinal());
+            ps.setLong(5, hcPlayer.getTime());
+            ps.setString(6, hcPlayer.getBedLocation());
+            ps.setString(7, hcPlayer.getDeathMessage());
+            ps.setString(8, hcPlayer.getReturnLocation());
+            ps.setString(9, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getMobKillList()));
+            ps.setString(10, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getDamageTakenList()));
+            ps.setString(11, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getDamageDealtList()));
+            ps.setString(12, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getItemCraftedList()));
+            ps.setString(13, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getTradesList()));
+            ps.setString(14, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getConsumeFoodList()));
+            ps.setString(15, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getDrinkPotionList()));
+            ps.setString(16, hcPlayer.getStatistics().toJson(hcPlayer.getStatistics().getEyesUsedList()));
 
             ps.executeUpdate();
         } catch (SQLException e) {

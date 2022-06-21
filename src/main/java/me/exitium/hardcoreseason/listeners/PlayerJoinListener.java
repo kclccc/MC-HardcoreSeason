@@ -19,25 +19,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.UUID;
 
 public record PlayerJoinListener(HardcoreSeason plugin) implements Listener {
-
-//    @EventHandler
-//    public void onPlayerJoin(PlayerJoinEvent event) {
-//        Player player = event.getPlayer();
-//        if (plugin.getHcWorldManager().isHardcoreWorld(player.getWorld().getName())) {
-//            plugin.getLogger().info("Player joined HC World!");
-//
-//            DatabaseManager db = plugin.getDb();
-//            if (db.getReader().hcPlayerExists(player.getUniqueId())) {
-//                plugin.getLogger().info("HC Player exists!");
-//            }
-//
-//            HCPlayer hcPlayer = new HCPlayer(player.getUniqueId());
-//            db.getWriter().updatePlayer(hcPlayer);
-//            plugin.addOnlinePlayer(hcPlayer);
-//        }
-//    }
-
-
+    
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         if (!plugin.getHcWorldManager().isHardcoreWorld(event.getPlayer().getWorld().getName())) return;
@@ -65,7 +47,7 @@ public record PlayerJoinListener(HardcoreSeason plugin) implements Listener {
             }
             player.teleport(Bukkit.getWorld(plugin.getHcWorldManager().getHCWorld(World.Environment.NORMAL)).getSpawnLocation());
 
-            HCPlayer hcPlayer = new HCPlayer(uuid);
+            HCPlayer hcPlayer = new HCPlayer(uuid, player.getName());
             hcPlayer.updateTime();
             plugin.addOnlinePlayer(hcPlayer);
 

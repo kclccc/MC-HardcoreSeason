@@ -59,6 +59,7 @@ public class DatabaseManager {
                 "CREATE TABLE IF NOT EXISTS hardcore_season (" +
                         mysql +
                         "uuid BINARY(16) NOT NULL, " +
+                        "player_name TEXT NOT NULL, " +
                         "season_number INT NOT NULL, " +
                         "status INT NOT NULL, " +
                         "time INT, " +

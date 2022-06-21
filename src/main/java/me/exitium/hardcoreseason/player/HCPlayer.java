@@ -2,9 +2,7 @@ package me.exitium.hardcoreseason.player;
 
 import com.comphenix.protocol.wrappers.Pair;
 import me.exitium.hardcoreseason.statistics.StatisticsHandler;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Arrays;
@@ -12,6 +10,7 @@ import java.util.UUID;
 
 public class HCPlayer {
     private final UUID uuid;
+    private String playerName;
     private HCPlayer.STATUS status;
     private StatisticsHandler statistics;
     private String deathMessage;
@@ -28,8 +27,9 @@ public class HCPlayer {
     private boolean enterVictoryPortal;
     private Pair<Pair<Location, Location>, Integer> netherBedLocation;
 
-    public HCPlayer(UUID uuid, STATUS status, StatisticsHandler statistics, String bedLocation, long time, String returnLocation) {
+    public HCPlayer(UUID uuid, String playerName, STATUS status, StatisticsHandler statistics, String bedLocation, long time, String returnLocation) {
         this.uuid = uuid;
+        this.playerName = playerName;
         this.status = status;
         this.statistics = statistics;
         this.bedLocation = bedLocation;
@@ -37,10 +37,18 @@ public class HCPlayer {
         this.returnLocation = returnLocation;
     }
 
-    public HCPlayer(UUID uuid) {
+    public HCPlayer(UUID uuid, String playerName) {
         this.uuid = uuid;
+        this.playerName = playerName;
         this.status = STATUS.ALIVE;
         this.statistics = new StatisticsHandler();
+    }
+
+    public HCPlayer(UUID uuid, String playerName, STATUS status, long time) {
+        this.uuid = uuid;
+        this.playerName = playerName;
+        this.status = status;
+        this.time = time;
     }
 
     public ItemStack[] getShulkerInventory() {
@@ -129,11 +137,7 @@ public class HCPlayer {
     }
 
     public String getPlayerName() {
-        Player player = Bukkit.getPlayer(uuid);
-        if (player == null) {
-            return "";
-        }
-        return player.getName();
+        return this.playerName;
     }
 
     public void setShulkerInventory(ItemStack[] contents) {
@@ -156,6 +160,7 @@ public class HCPlayer {
     public String toString() {
         return "HCPlayer{" +
                 "uuid=" + uuid +
+                ", playerName=" + playerName +
                 ", status=" + status +
                 ", statistics=" + statistics +
                 ", deathMessage='" + deathMessage + '\'' +

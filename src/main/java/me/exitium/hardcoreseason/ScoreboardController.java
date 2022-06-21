@@ -14,12 +14,11 @@ import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 
 import java.util.List;
-import java.util.UUID;
 
 public record ScoreboardController(HardcoreSeason plugin) {
 
     public void createScoreboard(Player player, int seasonNumber) {
-        List<UUID> hardcorePlayers = plugin.getDb().getReader().getAllPlayers(seasonNumber);
+        List<HCPlayer> hardcorePlayers = plugin.getDb().getReader().getAllPlayers(seasonNumber);
         if (hardcorePlayers == null || (long) hardcorePlayers.size() == 0) {
             player.sendMessage(Component.text("Season doesn't exist or no players this season!", NamedTextColor.RED));
             return;
@@ -33,22 +32,13 @@ public record ScoreboardController(HardcoreSeason plugin) {
 
         int row = 1;
 
-        for (UUID uuid : hardcorePlayers) {
+        for (HCPlayer hcPlayer : hardcorePlayers) {
             o.setDisplaySlot(DisplaySlot.SIDEBAR);
 
-            HCPlayer hcPlayer = plugin.getDb().getReader().getPlayer(uuid, seasonNumber);
-            if (hcPlayer == null) {
-                plugin.getLogger().warning("Player {" + uuid + "} returned NULL from database! Skipping...");
-                break;
-            }
-
-            HCPlayer onlinePlayer = plugin.getOnlinePlayer(uuid);
-            if (seasonNumber == plugin.getSeasonNumber() && onlinePlayer != null) {
-                if (!onlinePlayer.getStatus().equals(HCPlayer.STATUS.DEAD)) {
-                    onlinePlayer.updateTime();
-                    plugin.getDb().getWriter().updatePlayer(onlinePlayer);
-                }
-                hcPlayer = onlinePlayer;
+            HCPlayer onlinePlayer = plugin.getOnlinePlayer(hcPlayer.getUUID());
+            if (onlinePlayer != null && !onlinePlayer.getStatus().equals(HCPlayer.STATUS.DEAD)) {
+                onlinePlayer.updateTime();
+                plugin.getDb().getWriter().updatePlayer(onlinePlayer);
             }
 
             TextComponent pStatus = switch (hcPlayer.getStatus()) {

@@ -55,7 +55,7 @@ public record EnterHardcoreCommand(HardcoreSeason plugin) implements CommandExec
                 plugin.addOnlinePlayer(hcPlayer);
             } else {
                 isNewPlayer = true;
-                hcPlayer = new HCPlayer(player.getUniqueId());
+                hcPlayer = new HCPlayer(player.getUniqueId(), player.getName());
                 hcPlayer.setTimeCounter(System.currentTimeMillis());
                 plugin.addOnlinePlayer(hcPlayer);
 
