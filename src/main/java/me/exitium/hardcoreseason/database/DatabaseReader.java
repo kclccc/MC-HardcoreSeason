@@ -17,7 +17,7 @@ public record DatabaseReader(HardcoreSeason plugin) {
 
     public boolean hcPlayerExists(UUID uuid) {
         try (Connection connection = plugin.getSqlConnection(); PreparedStatement ps = connection.prepareStatement(
-                "SELECT * FROM hardcore_season WHERE uuid=? AND season_number=?")) {
+                "SELECT * FROM hardcore_players WHERE uuid=? AND season_number=?")) {
             ps.setObject(1, Utils.asBytes(uuid));
             ps.setInt(2, plugin.getSeasonNumber());
 
@@ -31,7 +31,7 @@ public record DatabaseReader(HardcoreSeason plugin) {
 
     public HCPlayer getPlayer(UUID uuid, int seasonNumber) {
         try (Connection connection = plugin.getSqlConnection(); PreparedStatement ps = connection.prepareStatement(
-                "SELECT * FROM hardcore_season WHERE uuid=? AND season_number=? LIMIT 1")) {
+                "SELECT * FROM hardcore_players WHERE uuid=? AND season_number=? LIMIT 1")) {
             ps.setObject(1, Utils.asBytes(uuid));
             ps.setInt(2, seasonNumber);
 
@@ -64,7 +64,7 @@ public record DatabaseReader(HardcoreSeason plugin) {
 
     public List<HCPlayer> getAllPlayers(int seasonNumber) {
         try (Connection connection = plugin.getSqlConnection(); PreparedStatement ps = connection.prepareStatement(
-                "SELECT * FROM hardcore_season WHERE season_number=?")) {
+                "SELECT * FROM hardcore_players WHERE season_number=?")) {
             ps.setInt(1, seasonNumber);
 
             ResultSet results = ps.executeQuery();

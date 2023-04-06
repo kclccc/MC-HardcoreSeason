@@ -51,12 +51,12 @@ public class DatabaseManager {
         }
     }
 
-    public void initTable(String storageType) {
+    public void initPlayerTable(String storageType) {
         String mysql = storageType.equals("MYSQL")
                 ? "rowid INTEGER PRIMARY KEY AUTO_INCREMENT, "
                 : "";
         try (PreparedStatement ps = plugin.getSqlConnection().prepareStatement(
-                "CREATE TABLE IF NOT EXISTS hardcore_season (" +
+                "CREATE TABLE IF NOT EXISTS hardcore_players (" +
                         mysql +
                         "uuid BINARY(16) NOT NULL, " +
                         "player_name TEXT NOT NULL, " +
@@ -76,6 +76,24 @@ public class DatabaseManager {
                         "potions_used TEXT, " +
                         "eyes_used TEXT, " +
                         "UNIQUE(uuid,season_number));")) {
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void initSeasonTable(String storageType) {
+        String mysql = storageType.equals("MYSQL")
+                ? "rowid INTEGER PRIMARY KEY AUTO_INCREMENT, "
+                : "";
+        try (PreparedStatement ps = plugin.getSqlConnection().prepareStatement(
+                "CREATE TABLE IF NOT EXISTS hardcore_seasons (" +
+                        mysql +
+                        "season_number INT NOT NULL, " +
+                        "seeds TEXT NOT NULL, " +
+                        "description TEXT NOT NULL, " +
+                        "difficulty INT NOT NULL," +
+                        "settings TEXT NOT NULL);")) {
             ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();

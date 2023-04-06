@@ -61,7 +61,7 @@ public record ExitHardcoreCommand(HardcoreSeason plugin) implements CommandExecu
                 } else {
                     player.teleport(Utils.processLocationString(returnLoc));
                 }
-                
+
                 player.sendMessage(Component.text("Thanks for playing, better luck next time!", NamedTextColor.GRAY));
                 return true;
             }
@@ -71,7 +71,7 @@ public record ExitHardcoreCommand(HardcoreSeason plugin) implements CommandExecu
                 @Override
                 public void run() {
                     // Check if player has a reward Shulker Box from killing the dragon
-                    // and send it with it's contents to the Softcore World.
+                    // and send it with its contents to the Softcore World.
                     validateArtifact(uuid);
 
                     finalHcPlayer.updateTime();
@@ -122,7 +122,6 @@ public record ExitHardcoreCommand(HardcoreSeason plugin) implements CommandExecu
                 itemStack != null
                         && itemStack.hasItemMeta()
                         && itemStack.getItemMeta().getPersistentDataContainer().has(key, PersistentDataType.INTEGER);
-//                        && itemStack.getItemMeta().getPersistentDataContainer().get(key, PersistentDataType.INTEGER) == 69;
 
         List<ItemStack> shulkerList = Arrays.stream(pInvContents)
                 .filter(itemStackPredicate)

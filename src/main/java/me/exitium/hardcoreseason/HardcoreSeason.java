@@ -10,6 +10,8 @@ import me.exitium.hardcoreseason.commands.*;
 import me.exitium.hardcoreseason.database.DatabaseManager;
 import me.exitium.hardcoreseason.database.Hikari;
 import me.exitium.hardcoreseason.listeners.*;
+import me.exitium.hardcoreseason.messagehandler.DeathMessages;
+import me.exitium.hardcoreseason.messagehandler.EntityNames;
 import me.exitium.hardcoreseason.player.HCPlayer;
 import me.exitium.hardcoreseason.worldhandler.HCWorldManager;
 import net.milkbowl.vault.permission.Permission;
@@ -31,16 +33,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class HardcoreSeason extends JavaPlugin {
-    private static Permission perms = null;
-    Map<UUID, HCPlayer> onlinePlayers;
-    Map<UUID, Integer> teleportingPlayers;
-    HCWorldManager hcWorldManager;
-    DatabaseManager db;
-    HikariDataSource hikari;
-    MultiverseCore multiverseCore;
     private HardcoreSeason instance;
-    private YamlConfiguration rewardsConfig;
-    private int seasonNumber;
 
     @Override
     public void onLoad() {
@@ -49,6 +42,16 @@ public final class HardcoreSeason extends JavaPlugin {
         }
         instance = this;
     }
+
+    Map<UUID, HCPlayer> onlinePlayers;
+    Map<UUID, Integer> teleportingPlayers;
+    HCWorldManager hcWorldManager;
+    DatabaseManager db;
+    HikariDataSource hikari;
+    MultiverseCore multiverseCore;
+    DeathMessages deathMessages;
+    EntityNames entityNames;
+    private int seasonNumber;
 
     @Override
     public void onEnable() {
@@ -77,7 +80,7 @@ public final class HardcoreSeason extends JavaPlugin {
 
         if (seasonNumber == 0) {
             getLogger().info("No data found, running initialization.");
-            hcWorldManager.createAll();
+            hcWorldManager.createAll(getDifficulty());
             getConfig().set("season-number", seasonNumber + 1);
             saveConfig();
         }
@@ -85,20 +88,22 @@ public final class HardcoreSeason extends JavaPlugin {
         db = new DatabaseManager(this);
         hikari = new Hikari(this).getHikariSource(getDb().getStorageType());
 
-
         String storageType = db.getStorageType();
         if (storageType == null || storageType.equals("")) {
             getLogger().info("Could not get storage type from config file. Defaulting to SQLITE.");
             storageType = "SQLITE";
         }
-//        if (storageType.equals("MYSQL")) db.createDatabase();
-        db.initTable(storageType);
+
+        db.initPlayerTable(storageType);
+        db.initSeasonTable(storageType);
 
         setupPermissions();
         setupMVInventoryGroups();
 
         onlinePlayers = new HashMap<>();
         teleportingPlayers = new HashMap<>();
+        deathMessages = new DeathMessages();
+        entityNames = new EntityNames();
     }
 
     private void registerCommands() {
@@ -207,6 +212,8 @@ public final class HardcoreSeason extends JavaPlugin {
         return multiverseCore;
     }
 
+    private YamlConfiguration rewardsConfig;
+
     public YamlConfiguration getRewardsConfig() {
         return rewardsConfig;
     }
@@ -232,6 +239,18 @@ public final class HardcoreSeason extends JavaPlugin {
             getLogger().info("No teleport-cooldown found or it was 0. Check config if this is incorrect!");
         }
         return teleportCD;
+    }
+
+    public int getDifficulty() {
+        return getConfig().getInt("default-difficulty");
+    }
+
+    public DeathMessages getDeathMessages() {
+        return deathMessages;
+    }
+
+    public EntityNames getEntityNames() {
+        return entityNames;
     }
 
     public MultiverseCore initMultiverse() {
@@ -272,6 +291,8 @@ public final class HardcoreSeason extends JavaPlugin {
         getConfig().set("season-number", seasonNumber);
         saveConfig();
     }
+
+    private static Permission perms = null;
 
     private void setupPermissions() {
         RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager().getRegistration(Permission.class);

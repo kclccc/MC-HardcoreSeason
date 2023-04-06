@@ -30,6 +30,11 @@ public record BarterListener(HardcoreSeason plugin) implements Listener {
         if (!container.has(key, new Utils.UUIDDataType())) return;
         UUID uuid = container.get(key, new Utils.UUIDDataType());
 
+        plugin.getOnlinePlayer(uuid).getStatistics().addStat(
+                new GenericStat("Gold Ingot", 1),
+                StatisticsHandler.STATTYPE.TRADES_MADE
+        );
+
         for (ItemStack item : output) {
             String itemString = item.getType().toString().replace('_', ' ');
 

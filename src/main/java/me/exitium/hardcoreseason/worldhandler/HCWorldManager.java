@@ -1,5 +1,6 @@
 package me.exitium.hardcoreseason.worldhandler;
 
+import com.google.gson.Gson;
 import com.onarandombox.MultiverseCore.MultiverseCore;
 import com.onarandombox.MultiverseCore.api.MultiverseWorld;
 import me.exitium.hardcoreseason.HardcoreSeason;
@@ -62,20 +63,29 @@ public class HCWorldManager {
         return softcoreWorld;
     }
 
-    public boolean createAll() {
+    public boolean createAll(int difficulty) {
+        Map<World.Environment, String> seeds = new HashMap<>();
+
         for (World.Environment env : hardcoreWorlds.keySet()) {
-            createWorld(env);
+            seeds.put(env, createWorld(env));
         }
+
+        // Map to JSON string
+        var gson = new Gson();
+        String seedJson = gson.toJson(seeds);
+        
+        plugin.incrementSeasonNumber();
+        plugin.getDb().getWriter().addSeason(plugin.getSeasonNumber(), seedJson, "", difficulty, "");
         return true;
     }
 
-    public void createWorld(World.Environment environment) {
+    public String createWorld(World.Environment environment) {
         MultiverseCore mvCore = plugin.getMultiverseCore();
         HCWorld hcWorld = fromConfig(environment);
 
         if (hcWorld == null) {
             plugin.getLogger().severe("Could not create world from config settings!");
-            return;
+            return "";
         }
 
         String worldName = hcWorld.getName();
@@ -86,7 +96,7 @@ public class HCWorldManager {
 
         if (mvCore.getMVWorldManager().addWorld(
                 worldName,                   // name
-                environment,    // environment
+                environment,                 // environment
                 null,                        // seed
                 hcWorld.getType(),           // type
                 true,                        // generate structures
@@ -99,14 +109,19 @@ public class HCWorldManager {
             world.setDifficulty(hcWorld.getDifficulty());
             world.setKeepSpawnInMemory(false);
 
+            // TODO: Bukkit.world to set GameRule for different ways to play the map
+            // i.e. no mob spawning, always daytime, etc.
+
             if (!hcWorld.getSpawnExceptions().isEmpty()) {
                 for (String mob : hcWorld.getSpawnExceptions()) {
                     world.getMonsterList().add(mob);
                 }
             }
+            return String.valueOf(world.getSeed());
         } else {
             plugin.getLogger().info("Failed to create world: " + worldName);
         }
+        return "";
     }
 
     private void deleteWorld(World world) {

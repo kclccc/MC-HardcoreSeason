@@ -10,10 +10,26 @@ import java.sql.SQLException;
 
 public record DatabaseWriter(HardcoreSeason plugin) {
 
+    public void addSeason(int seasonNumber, String seed, String description, int difficulty, String settings) {
+        try (Connection connection = plugin.getSqlConnection(); PreparedStatement ps = connection.prepareStatement(
+                "INSERT INTO hardcore_seasons (season_number, seeds, description, difficulty, settings) " +
+                        "VALUES(?, ?, ?, ?, ?);")) {
+            ps.setInt(1, seasonNumber);
+            ps.setString(2, seed);
+            ps.setString(3, description);
+            ps.setLong(4, difficulty);
+            ps.setString(5, settings);
+
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void addPlayer(HCPlayer hcPlayer) {
         try (Connection connection = plugin.getSqlConnection(); PreparedStatement ps = connection.prepareStatement(
-                "INSERT INTO hardcore_season (uuid, player_name, season_number, status) " +
-                        "VALUES(?, ?, ?);")) {
+                "INSERT INTO hardcore_players (uuid, player_name, season_number, status) " +
+                        "VALUES(?, ?, ?, ?);")) {
             ps.setObject(1, Utils.asBytes(hcPlayer.getUUID()));
             ps.setString(2, hcPlayer.getPlayerName());
             ps.setInt(3, plugin.getSeasonNumber());
@@ -26,7 +42,7 @@ public record DatabaseWriter(HardcoreSeason plugin) {
     }
 
     public void updatePlayer(HCPlayer hcPlayer) {
-        String mysqlUpsert = "INSERT INTO hardcore_season (uuid, player_name, season_number, status, time, spawn_point, death_type, return_location, " +
+        String mysqlUpsert = "INSERT INTO hardcore_players (uuid, player_name, season_number, status, time, spawn_point, death_type, return_location, " +
                 "monster_kills, damage_taken, damage_dealt, items_crafted, trades_made, food_eaten, potions_used, eyes_used) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
                 "ON DUPLICATE KEY UPDATE " +
@@ -44,7 +60,7 @@ public record DatabaseWriter(HardcoreSeason plugin) {
                 "potions_used=VALUES(potions_used), " +
                 "eyes_used=VALUES(eyes_used)";
 
-        String sqliteUpsert = "INSERT INTO hardcore_season (uuid, player_name, season_number, status, time, spawn_point, death_type, return_location, " +
+        String sqliteUpsert = "INSERT INTO hardcore_players (uuid, player_name, season_number, status, time, spawn_point, death_type, return_location, " +
                 "monster_kills, damage_taken, damage_dealt, items_crafted, trades_made, food_eaten, potions_used, eyes_used) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
                 "ON CONFLICT(uuid, season_number) DO UPDATE SET " +

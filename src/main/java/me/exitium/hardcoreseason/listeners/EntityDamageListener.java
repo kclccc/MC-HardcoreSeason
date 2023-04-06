@@ -21,6 +21,8 @@ import org.bukkit.event.entity.EntityPickupItemEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class EntityDamageListener implements Listener {
     private final HardcoreSeason plugin;
@@ -143,7 +145,7 @@ public class EntityDamageListener implements Listener {
                     StatisticsHandler.STATTYPE.DAMAGE_DEALT);
 
             receivingPlayer.getStatistics().addStat(new GenericStat(
-                            "Friendly Fire", (int) damageAmount),
+                            attackingPlayer.getPlayerName(), (int) damageAmount),
                     StatisticsHandler.STATTYPE.DAMAGE_TAKEN);
         }
     }
@@ -166,9 +168,13 @@ public class EntityDamageListener implements Listener {
         if (!(entity instanceof Player)) return;
         if (!ENTITY_DAMAGE_CAUSES.contains(event.getCause())) {
             double finalDamage = event.getFinalDamage();
+            String causeString = WordUtils.capitalizeFully(event.getCause().toString().replace("_", " "));
+
+            Pattern r = Pattern.compile("Player.*name=(.*)}");
+            Matcher m = r.matcher(causeString);
 
             plugin.getOnlinePlayer(event.getEntity().getUniqueId()).getStatistics().addStat(
-                    new GenericStat(event.getCause().toString(), (int) event.getFinalDamage()),
+                    new GenericStat(m.find() ? m.group(0) : causeString, (int) event.getFinalDamage()),
                     StatisticsHandler.STATTYPE.DAMAGE_TAKEN);
         }
 

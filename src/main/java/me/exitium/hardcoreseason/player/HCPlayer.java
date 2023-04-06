@@ -149,8 +149,8 @@ public class HCPlayer {
     }
 
     public enum STATUS {
-        ALIVE,
         DEAD,
+        ALIVE,
         NETHER,
         END,
         VICTORY

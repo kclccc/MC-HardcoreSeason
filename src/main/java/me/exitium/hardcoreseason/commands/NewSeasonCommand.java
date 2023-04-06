@@ -11,8 +11,17 @@ public record NewSeasonCommand(HardcoreSeason plugin) implements CommandExecutor
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         sender.sendMessage("Creating new Hardcore Season! Please wait while worlds are processed...");
-        if (plugin.getHcWorldManager().createAll()) {
-            plugin.incrementSeasonNumber();
+
+        int difficulty = 0;
+        if (args.length > 0) {
+            try {
+                difficulty = Integer.parseInt(args[0]);
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+
+        if (plugin.getHcWorldManager().createAll(difficulty == 0 ? plugin.getDifficulty() : difficulty)) {
             sender.sendMessage("Hardcore Season " + plugin.getSeasonNumber() + " has started!");
             return true;
         }

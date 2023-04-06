@@ -31,8 +31,8 @@ commands:
     usage: /<command> <player-name>
     permission: hardcoreseason.hasdied
   hcnewseason:
-    description: Create a new season of Hardcore, removing old worlds if they exist.
-    usage: /<command>
+    description: Create a new season of Hardcore, deleting old worlds if they exist.
+    usage: /<command> <difficulty>
     permission: op
   hcresetplayer:
     description: Reset an individual player for the current season.
