@@ -25,15 +25,4 @@ public record PlayerMoveListener(HardcoreSeason plugin) implements Listener {
             plugin.remTeleportingPlayer(player.getUniqueId());
         }
     }
-//    @EventHandler
-//    public void onPlayerMove(PlayerMoveEvent event) {
-//        Player player = event.getPlayer();
-//        if (!(plugin.getHcWorldManager().isHardcoreWorld(player.getWorld().getName()))) return;
-//
-//        int taskID = plugin.getTeleportingPlayer(player.getUniqueId());
-//        if (taskID != 0 && event.hasChangedPosition()) Bukkit.getScheduler().cancelTask(taskID);
-//
-//        plugin.getOnlinePlayer(player.getUniqueId()).setTeleportTaskID(0);
-//        player.sendMessage(Utils.colorize("&cTeleporting cancelled. Please stand still to teleport."));
-//    }
 }

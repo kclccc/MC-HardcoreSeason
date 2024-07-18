@@ -94,6 +94,7 @@ public final class HardcoreSeason extends JavaPlugin {
             storageType = "SQLITE";
         }
 
+        db.createDatabase();
         db.initPlayerTable(storageType);
         db.initSeasonTable(storageType);
 
